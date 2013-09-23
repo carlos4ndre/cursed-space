@@ -1,3 +1,4 @@
+# Cursed Space
 
 Hey There!
 
@@ -7,3 +8,14 @@ This game was entirely developed with ncurses! The bleeding edge graphical API :
 
 Enjoy the game!
 w1zard
+
+
+## Usage
+
+Compile the project like a ninja
+
+    $ make
+
+And then execute:
+
+    $ ./cursedSpace
