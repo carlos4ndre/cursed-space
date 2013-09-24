@@ -25,6 +25,13 @@
 #define LEFT 2
 #define RIGHT 3
 
+#define NONE 0
+#define ALIGN_CENTER 1
+#define BG_WHITE_TXT_BLACK 1
+#define BG_WHITE_TXT_BLUE 2
+#define BG_WHITE_TXT_GREEN 3
+#define BG_WHITE_TXT_RED 4
+
 typedef struct spaceObj
 {
    int x0,x1,y0,y1;
@@ -43,7 +50,7 @@ void dispose();
 void handle_user_input();
 void move_obj(int direction,spaceObj *obj);
 
-void center_text(int row, char *title,int display_speed);
+void print_text(int x,int y, char *title,int color,int style,int align,int display_speed);
 void print_main_menu();
 void print_world();
 void print_obj(spaceObj *obj);

@@ -37,6 +37,15 @@ void initialize()
    initscr();
    keypad(stdscr,TRUE);
    curs_set(0);
+   //start_color();
+
+   init_pair(BG_WHITE_TXT_BLACK,COLOR_BLACK,COLOR_WHITE);
+   init_pair(BG_WHITE_TXT_BLUE,COLOR_BLUE,COLOR_WHITE);
+   init_pair(BG_WHITE_TXT_GREEN,COLOR_GREEN,COLOR_WHITE);
+   init_pair(BG_WHITE_TXT_RED,COLOR_RED,COLOR_WHITE);
+
+   bkgd(use_default_colors());
+
 
    int i;
    for(i=0;i<NUMBER_OBJS;i++)
@@ -165,66 +174,77 @@ int position_valid(int x0,int y0,int x1,int y1)
    return x0>=0 && y0>=0 && x1<=max_x && y1<=max_y;
 }
 
-void center_text(int row, char *title,int display_speed)
-{
-        int len,indent,y,width;
-
-        getmaxyx(stdscr,y,width);       /* get screen width */
-
-        len = strlen(title);            /* get title's length */
-        indent = width - len;           /* subtract it from screen width */
-        indent /= 2;                    /* divide result into two */
-
-
-	move(row,indent);
-
-	while(*title)			   /* loop through the whole string */
-	{
-		addch(*title);		   /* put one char to curscr */
-		title++;		   /* increment the pointer */
-		refresh();		   /* update the screen */
-		napms(display_speed);  /* delay a bit to see the display */
-	}
-}
 
 
 /*****************************
 ** All printable content
 *****************************/
 
+void print_text(int x,int y, char *text,int color,int style,int align,int display_speed)
+{
+	if(align == ALIGN_CENTER)
+	   x = (x-strlen(text))/2;
+
+	move(y,x);
+
+	while(*text)			   /* loop through the whole string */
+	{
+	        attrset(COLOR_PAIR(color));
+                if(style != NONE) 
+		    attron(style);
+
+		addch(*text);		   /* put one char to curscr */
+		text++;		   /* increment the pointer */
+
+		if(display_speed != 0) 
+                {
+	            refresh();		   /* update the screen */
+		    napms(display_speed);  /* delay a bit to see the display */
+		}
+	}
+
+        attrset(COLOR_PAIR(color));
+        if(style != NONE) 
+              attroff(style);
+}
+
+
 void print_main_menu() 
 {
    int logo_display_speed = 1;
    int history_display_speed = 50;
    int start_display_speed = 1;
+   int x,y;
 
-   center_text(1," _______           _______  _______  _______  ______  ",logo_display_speed);
-   center_text(2,"(  ____ \\|\\     /|(  ____ )(  ____ \\(  ____ \\(  __  \\ ",logo_display_speed);
-   center_text(3,"| (    \\/| )   ( || (    )|| (    \\/| (    \\/| (  \\  )",logo_display_speed);
-   center_text(4,"| |      | |   | || (____)|| (_____ | (__    | |   ) |",logo_display_speed);
-   center_text(5,"| |      | |   | ||     __)(_____  )|  __)   | |   | |",logo_display_speed);
-   center_text(6,"| |      | |   | || (\\ (         ) || (      | |   ) |",logo_display_speed);
-   center_text(7,"| (____/\\| (___) || ) \\ \\__/\\____) || (____/\\| (__/  )",logo_display_speed);
-   center_text(8,"(_______/(_______)|/   \\__/\\_______)(_______/(______/ ",logo_display_speed);
-   center_text(10," _______  _______  _______  _______  _______   ",logo_display_speed);
-   center_text(11,"(  ____ \\(  ____ )(  ___  )(  ____ \\(  ____ \\ ",logo_display_speed);
-   center_text(12,"| (    \\/| (    )|| (   ) || (    \\/| (    \\/ ",logo_display_speed);
-   center_text(13,"| (_____ | (____)|| (___) || |      | (__     ",logo_display_speed);
-   center_text(14,"(_____  )|  _____)|  ___  || |      |  __)    ",logo_display_speed);
-   center_text(15,"      ) || (      | (   ) || |      | (       ",logo_display_speed);
-   center_text(16,"/\\____) || )      | )   ( || (____/\\| (____/\\ ",logo_display_speed);
-   center_text(17,"\\_______)|/       |/     \\|(_______/(_______/ ",logo_display_speed);
+   getmaxyx(stdscr,y,x);
 
-
-   center_text(22,"On a remote terminal very far far far away",history_display_speed);
-   center_text(23,"there is a universe on the edge of its very existence,",history_display_speed);
-   center_text(24,"infested with ASCII asteroids and aliens.",history_display_speed);
-   center_text(25,"But there is still hope!",history_display_speed);
-   center_text(26,"You can make the difference aboard the killer ship!",history_display_speed);
-   center_text(27,"Your terminal is counting on you! Good hunt!",history_display_speed);
+   print_text(x,0,"                                                      ",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,1," _______           _______  _______  _______  ______  ",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,2,"(  ____ \\|\\     /|(  ____ )(  ____ \\(  ____ \\(  __  \\ ",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,3,"| (    \\/| )   ( || (    )|| (    \\/| (    \\/| (  \\  )",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,4,"| |      | |   | || (____)|| (_____ | (__    | |   ) |",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,5,"| |      | |   | ||     __)(_____  )|  __)   | |   | |",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,6,"| |      | |   | || (\\ (         ) || (      | |   ) |",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,7,"| (____/\\| (___) || ) \\ \\__/\\____) || (____/\\| (__/  )",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,8,"(_______/(_______)|/   \\__/\\_______)(_______/(______/ ",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,10," _______  _______  _______  _______  _______  ",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,11,"(  ____ \\(  ____ )(  ___  )(  ____ \\(  ____ \\",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,12,"| (    \\/| (    )|| (   ) || (    \\/| (    \\/ ",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,13,"| (_____ | (____)|| (___) || |      | (__     ",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,14,"(_____  )|  _____)|  ___  || |      |  __)    ",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,15,"      ) || (      | (   ) || |      | (       ",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,16,"/\\____) || )      | )   ( || (____/\\| (____/\\ ",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,17,"\\_______)|/       |/     \\|(_______/(_______/ ",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
 
 
-   center_text(35,"Press any key to start",start_display_speed);
+   print_text(x,22,"On a remote terminal very far far far away",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,history_display_speed);
+   print_text(x,23,"there is a universe on the edge of its very existence,",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,history_display_speed);
+   print_text(x,24,"infested with ASCII asteroids and aliens.",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,history_display_speed);
+   print_text(x,25,"But there is still hope!",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,history_display_speed);
+   print_text(x,26,"You can make the difference aboard the killer ship!",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,history_display_speed);
+   print_text(x,27,"Your terminal is counting on you! Good hunt!",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,history_display_speed);
+
+   print_text(x,35,"Press any key to start",BG_WHITE_TXT_BLACK,A_BOLD,ALIGN_CENTER,start_display_speed);
 }
 
 
@@ -287,16 +307,7 @@ void print_obj(spaceObj *obj)
 
    for(y=0;y<max_lines;y++,image++) 
    {
-      char *line = *image;
-
-      while(*line)                 /* loop through the whole string */
-      {
-         move(obj->y0+y,obj->x0+x);
-         addch(*line);             /* put one char to curscr */
-         line++;
-         x++;
-      }
-      x = 0;
+      print_text(obj->x0,obj->y0+y,*image,BG_WHITE_TXT_BLUE,NONE,NONE,0);
    }
 }
 
