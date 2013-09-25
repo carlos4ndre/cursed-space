@@ -37,12 +37,13 @@ void initialize()
    initscr();
    keypad(stdscr,TRUE);
    curs_set(0);
-   //start_color();
+   start_color();
 
    init_pair(BG_WHITE_TXT_BLACK,COLOR_BLACK,COLOR_WHITE);
    init_pair(BG_WHITE_TXT_BLUE,COLOR_BLUE,COLOR_WHITE);
    init_pair(BG_WHITE_TXT_GREEN,COLOR_GREEN,COLOR_WHITE);
    init_pair(BG_WHITE_TXT_RED,COLOR_RED,COLOR_WHITE);
+   init_pair(BG_BLACK_TXT_BLACK,COLOR_BLACK,COLOR_BLACK);
 
    bkgd(use_default_colors());
 
@@ -100,31 +101,77 @@ void dispose()
 
 void handle_user_input() 
 {
-   int ch;
+   char ch;
 
    ch = getch();
-   switch(ch)
+
+   switch(ch) 
    {
-      case KEY_DOWN:
-               move_obj(DOWN,&gameObjs[0]);
-               break;
-      case KEY_UP:
-               move_obj(UP,&gameObjs[0]);
-               break;
-      case KEY_LEFT:
-               move_obj(LEFT,&gameObjs[0]);
-               break;
-      case KEY_RIGHT:
-               move_obj(RIGHT,&gameObjs[0]);
-               break;
-      default:
-               break;
+      case PRESS_DOWN:
+           move_obj(DOWN,&gameObjs[0]);
+           break;
+      case PRESS_UP:
+           move_obj(UP,&gameObjs[0]);
+           break;
+      case PRESS_RIGHT:
+           move_obj(RIGHT,&gameObjs[0]);
+           break;
+      case PRESS_LEFT:
+           move_obj(LEFT,&gameObjs[0]);
+           break;
+      case FIRE_PHOTON_TORPEDOS:
+           move_obj(RIGHT,&gameObjs[0]);
+           break;
+      case ION_CANNON:
+           move_obj(RIGHT,&gameObjs[0]);
+           break;
+      case WARP:
+           teleport();
+           break;
+      case MASSIVE_BLACK_HOLE:
+           summon_black_hole();
+           break;
    }
 }
 
 /*****************************
 ** Vectorial functions
 *****************************/
+
+void teleport() 
+{
+   int max_x,max_y;
+   int middle_screen;
+   int x0,x1,len;
+
+   getmaxyx(stdscr,max_y,max_x);
+   middle_screen = max_x/2;
+
+   x0 = gameObjs[0].x0;
+   x1 = gameObjs[0].x1;
+   len = x1 - x0;
+
+   if(x0 > middle_screen && x0-middle_screen > 0)
+   {
+          gameObjs[0].x0 -= middle_screen;
+          gameObjs[0].x1 -= middle_screen;
+   }
+   else if(x0 > middle_screen && x0-middle_screen/2 > 0)
+   {
+          gameObjs[0].x0 -= middle_screen/2;
+          gameObjs[0].x1 -= middle_screen/2;
+   }
+   else if(x1 < middle_screen && x1+middle_screen < max_x) 
+   {
+          gameObjs[0].x0 += middle_screen;
+	  gameObjs[0].x1 += middle_screen;
+   }
+   else //if(x1 < middle_screen && x1+middle_screen/2 < max_x)
+   {
+          gameObjs[0].x0 += middle_screen/2;
+          gameObjs[0].x1 += middle_screen/2;
+   }
+}
 
 void move_obj(int direction,spaceObj *obj)
 {
@@ -174,6 +221,22 @@ int position_valid(int x0,int y0,int x1,int y1)
    return x0>=0 && y0>=0 && x1<=max_x && y1<=max_y;
 }
 
+
+int random_number(int min_num, int max_num)
+{
+   int result=0,low_num=0,hi_num=0;
+   if(min_num<max_num)
+   {
+       low_num=min_num;
+       hi_num=max_num+1; // this is done to include max_num in output.
+   }else{
+       low_num=max_num+1;// this is done to include max_num in output.
+        hi_num=min_num;
+   }
+   srand(time(NULL));
+   result = (rand()%(hi_num-low_num))+low_num;
+   return result;
+}
 
 
 /*****************************
@@ -310,6 +373,31 @@ void print_obj(spaceObj *obj)
       print_text(obj->x0,obj->y0+y,*image,BG_WHITE_TXT_BLUE,NONE,NONE,0);
    }
 }
+
+
+void summon_black_hole() 
+{
+   int max_x,max_y;
+   int x_center,y_center;
+   int x,y;
+   start_color();
+
+   getmaxyx(stdscr,max_y,max_x);
+
+   x_center = max_x/2;
+   y_center = max_y/2;
+
+   for(x=0;x<x_center;x++) {
+      for(y=0;y<y_center;y++) 
+      {
+   	  print_text(x_center+x,y_center+y,"*",BG_BLACK_TXT_BLACK,NONE,NONE,1);
+	  print_text(x_center+x,y_center-y,"*",BG_BLACK_TXT_BLACK,NONE,NONE,1);
+          print_text(x_center-x,y_center+y,"*",BG_BLACK_TXT_BLACK,NONE,NONE,1);
+          print_text(x_center-x,y_center-y,"*",BG_BLACK_TXT_BLACK,NONE,NONE,1);
+      }
+    }
+}
+
 
 /*
 
