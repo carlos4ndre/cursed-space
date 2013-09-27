@@ -10,16 +10,17 @@
 #define HERO_SPACESHIP 0
 #define ALIEN_SPACESHIP 1
 #define ASTEROID 2
-#define BLACK_HOLE 3
+#define PHOTON_TORPEDO 3
+#define ION_CANNON 4
 
 #define PRESS_DOWN 's'
 #define PRESS_UP 'w'
 #define PRESS_LEFT 'a'
 #define PRESS_RIGHT 'd'
-#define FIRE_PHOTON_TORPEDOS 'f'
-#define ION_CANNON 'i'
-#define WARP 't'
-#define MASSIVE_BLACK_HOLE 'b'
+#define PRESS_FIRE_PHOTON_TORPEDOS 'f'
+#define PRESS_ION_CANNON 'i'
+#define PRESS_WARP 't'
+#define PRESS_MASSIVE_BLACK_HOLE 'b'
 
 #define MAX_SHIELD 10
 #define MAX_PHOTON_TORPEDOS 5
@@ -42,6 +43,7 @@
 #define BG_WHITE_TXT_GREEN 3
 #define BG_WHITE_TXT_RED 4
 #define BG_BLACK_TXT_BLACK 5
+#define BG_BLUE_TXT_WHITE 6
 
 typedef struct spaceObj
 {
@@ -59,9 +61,11 @@ void resume();
 void dispose();
 
 void handle_user_input();
+void process_world_events();
 void move_obj(int direction,spaceObj *obj);
 void teleport();
 void summon_black_hole();
+void blast_them_with_ion_cannon();
 int random_number(int min_num, int max_num);
 
 void print_text(int x,int y, char *title,int color,int style,int align,int display_speed);

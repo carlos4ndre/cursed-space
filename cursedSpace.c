@@ -19,6 +19,7 @@ int main(void)
    while(game_status != GAME_FINISHED) 
    {
       handle_user_input();
+      process_world_events();
       render();
    }
 
@@ -36,6 +37,7 @@ void initialize()
 {
    initscr();
    keypad(stdscr,TRUE);
+   noecho();
    curs_set(0);
    start_color();
 
@@ -44,6 +46,7 @@ void initialize()
    init_pair(BG_WHITE_TXT_GREEN,COLOR_GREEN,COLOR_WHITE);
    init_pair(BG_WHITE_TXT_RED,COLOR_RED,COLOR_WHITE);
    init_pair(BG_BLACK_TXT_BLACK,COLOR_BLACK,COLOR_BLACK);
+   init_pair(BG_BLUE_TXT_WHITE,COLOR_WHITE,COLOR_BLUE);
 
    bkgd(use_default_colors());
 
@@ -95,10 +98,6 @@ void dispose()
    endwin();
 }
 
-/*****************************
-** User Input Handlers
-*****************************/
-
 void handle_user_input() 
 {
    char ch;
@@ -119,18 +118,45 @@ void handle_user_input()
       case PRESS_LEFT:
            move_obj(LEFT,&gameObjs[0]);
            break;
-      case FIRE_PHOTON_TORPEDOS:
+      case PRESS_FIRE_PHOTON_TORPEDOS:
            move_obj(RIGHT,&gameObjs[0]);
            break;
-      case ION_CANNON:
-           move_obj(RIGHT,&gameObjs[0]);
+      case PRESS_ION_CANNON:
+           blast_them_with_ion_cannon();
            break;
-      case WARP:
+      case PRESS_WARP:
            teleport();
            break;
-      case MASSIVE_BLACK_HOLE:
+      case PRESS_MASSIVE_BLACK_HOLE:
            summon_black_hole();
            break;
+   }
+}
+
+
+void process_world_events()
+{
+   int obj_number, obj_type;
+
+   for(obj_number=1;obj_number<NUMBER_OBJS;obj_number++)
+   {
+	obj_type = gameObjs[obj_number].type;
+
+	switch(obj_type)
+	{
+            case HERO_SPACESHIP:
+                // multiplayer? :) 
+		break;
+            case ALIEN_SPACESHIP:
+                // do something
+                break;
+            case ASTEROID:
+ 		// do something
+                break;
+            default:
+		// do something
+                break;
+	}
    }
 }
 
@@ -336,9 +362,9 @@ spaceObj init_hero_spaceship()
    for(i = 0; i < spaceship_height; i++)
         image[i] = malloc( spaceship_width*sizeof(char));
 
-   strcpy(image[0],"                                   ");
+   strcpy(image[0],"                                     ");
    strcpy(image[1],"_____________         _______________");
-   strcpy(image[2],"\\____________)  _____/ == killer == / ");
+   strcpy(image[2],"\\____________)  _____/ == killer == /");
    strcpy(image[3],"      | |      /_:::_______________/ ");
    strcpy(image[4],"      | |       /  /    \\_______/    ");
    strcpy(image[5],"   ___|_|______/__/                  ");
@@ -370,7 +396,7 @@ void print_obj(spaceObj *obj)
 
    for(y=0;y<max_lines;y++,image++) 
    {
-      print_text(obj->x0,obj->y0+y,*image,BG_WHITE_TXT_BLUE,NONE,NONE,0);
+      print_text(obj->x0,obj->y0+y,*image,BG_WHITE_TXT_BLACK,NONE,NONE,0);
    }
 }
 
@@ -380,7 +406,6 @@ void summon_black_hole()
    int max_x,max_y;
    int x_center,y_center;
    int x,y;
-   start_color();
 
    getmaxyx(stdscr,max_y,max_x);
 
@@ -398,6 +423,29 @@ void summon_black_hole()
     }
 }
 
+
+void blast_them_with_ion_cannon()
+{
+   int max_x,max_y;
+   int x1,y0,y1;
+   int column,line;
+   getmaxyx(stdscr,max_y,max_x);
+
+   x1 = gameObjs[0].x1;
+   y0 = gameObjs[0].y0;
+   y1 = gameObjs[0].y1;
+
+   for(column=x1;column<max_x;column++) 
+   {
+       for(line=y0;line<y1;line++) 
+       {
+            if(column % 2)
+            	print_text(column,line,"-",BG_BLUE_TXT_WHITE,NONE,NONE,1);
+            else
+                print_text(column,line,"~",BG_BLUE_TXT_WHITE,NONE,NONE,1);
+       }
+   }
+}
 
 /*
 
