@@ -2,9 +2,13 @@
 #include <ncurses.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
+#include <sys/time.h>
 
 #define NUMBER_OBJS 20
 
+int level = 0;
+time_t level_timer = 0;
 int game_status = GAME_ON_MAIN_MENU;
 spaceObj gameObjs[NUMBER_OBJS];
 
@@ -18,6 +22,7 @@ int main(void)
 
    while(game_status != GAME_FINISHED) 
    {
+      check_level_status();
       handle_user_input();
       process_world_events();
       render();
@@ -51,12 +56,7 @@ void initialize()
    bkgd(use_default_colors());
 
 
-   int i;
-   for(i=0;i<NUMBER_OBJS;i++)
-	 gameObjs[i].status = STATUS_DESTROYED;
-
-   spaceObj hero_spaceship = init_hero_spaceship();
-   gameObjs[0] = hero_spaceship;
+   init_level(LEVEL_1);
 }
 
 
@@ -68,6 +68,9 @@ void render()
    {
       case GAME_ON_MAIN_MENU:
             print_main_menu();
+            getchar();
+ 	    clear();
+            print_howto_menu();
             getchar();
             game_status = GAME_RUNNING;
             break;
@@ -101,9 +104,20 @@ void dispose()
 void handle_user_input() 
 {
    char ch;
+   struct timeval begin,end;
+   double elapsed_time = 0,wait_time=0;
 
+   gettimeofday(&begin, NULL);
+   timeout(50);
    ch = getch();
+   gettimeofday(&end, NULL);
 
+   elapsed_time = (end.tv_sec - begin.tv_sec) * 1000.0;      // sec to ms
+   elapsed_time += (end.tv_usec - begin.tv_usec) / 1000.0;   // us to ms
+   wait_time = 50 - elapsed_time; 
+
+   napms(wait_time);
+ 
    switch(ch) 
    {
       case PRESS_DOWN:
@@ -134,6 +148,38 @@ void handle_user_input()
 }
 
 
+void check_level_status()
+{
+    time_t now = time(NULL);	
+    int elapsed_time = now - level_timer;
+
+    if(elapsed_time < 60) 
+          return;
+
+    switch(level)
+    {
+       case LEVEL_1: 
+           level = LEVEL_2;
+           init_level(LEVEL_2);
+           break;
+       case LEVEL_2: 
+           level = LEVEL_3;
+           init_level(LEVEL_3);
+           break;
+       case LEVEL_3: 
+           level = LEVEL_4;
+           init_level(LEVEL_4);
+           break;
+       case LEVEL_4: 
+           level = FINAL_BOSS;
+           init_level(FINAL_BOSS);
+           break;
+       case FINAL_BOSS:
+           break;
+           // do something
+    }
+}
+
 void process_world_events()
 {
    int obj_number, obj_type;
@@ -151,7 +197,7 @@ void process_world_events()
                 // do something
                 break;
             case ASTEROID:
- 		// do something
+                move_obj(LEFT,&gameObjs[obj_number]);
                 break;
             default:
 		// do something
@@ -159,6 +205,7 @@ void process_world_events()
 	}
    }
 }
+
 
 /*****************************
 ** Vectorial functions
@@ -201,6 +248,8 @@ void teleport()
 
 void move_obj(int direction,spaceObj *obj)
 {
+   int obj_invalid = 0;
+   int obj_type = obj->type;
    int x0 = obj->x0;
    int x1 = obj->x1;
    int y0 = obj->y0;
@@ -210,31 +259,34 @@ void move_obj(int direction,spaceObj *obj)
    {
       case DOWN:
                y0++; y1++;
-               if(!position_valid(x0,y0,x1,y1)) break;
+               if(!position_valid(x0,y0,x1,y1)) { obj_invalid = 1; break; }
                obj->y0++;
                obj->y1++;
                break;
       case UP:
                y0--; y1--;
-               if(!position_valid(x0,y0,x1,y1)) break;
+               if(!position_valid(x0,y0,x1,y1)) { obj_invalid = 1; break; }
                obj->y0--;
                obj->y1--;
                break;
       case LEFT:
                x0--; x1--;
-               if(!position_valid(x0,y0,x1,y1)) break;
+               if(!position_valid(x0,y0,x1,y1)) { obj_invalid = 1; break; }
                obj->x0--;
                obj->x1--;
                break;
       case RIGHT:
                x0++; x1++;
-               if(!position_valid(x0,y0,x1,y1)) break;
+               if(!position_valid(x0,y0,x1,y1)) { obj_invalid = 1; break; }
                obj->x0++;
                obj->x1++;
                break;
       default:
                break;
    }
+
+   if(obj_invalid && obj_type != HERO_SPACESHIP)
+        obj->status = STATUS_DESTROYED;
 }
 
 
@@ -336,11 +388,65 @@ void print_main_menu()
    print_text(x,35,"Press any key to start",BG_WHITE_TXT_BLACK,A_BOLD,ALIGN_CENTER,start_display_speed);
 }
 
-
-
-spaceObj init_hero_spaceship() 
+void print_howto_menu()
 {
-   spaceObj obj;
+   int logo_display_speed = 1;
+   int history_display_speed = 50;
+   int start_display_speed = 1;
+   int x,y;
+
+   getmaxyx(stdscr,y,x);
+   y /= 4;
+
+   print_text(x,y," _   _                 _____      ______ _             ",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,y+1,"| | | |               |_   _|     | ___ \\ |            ",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,y+2,"| |_| | _____      __   | | ___   | |_/ / | __ _ _   _ ",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,y+3,"|  _  |/ _ \\ \\ /\\ / /   | |/ _ \\  |  __/| |/ _` | | | |",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,y+4,"| | | | (_) \\ V  V /    | | (_) | | |   | | (_| | |_| |",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,y+5,"\\_| |_/\\___/ \\_/\\_/     \\_/\\___/  \\_|   |_|\\__,_|\\__, |",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,y+6,"                                                  __/ |",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,y+7,"                                                 |___/ ",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+
+   print_text(x,y+10,"w - move ship up",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,start_display_speed);
+   print_text(x,y+11,"s - move ship down",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,start_display_speed);
+   print_text(x,y+12,"a - move ship left",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,start_display_speed);
+   print_text(x,y+13,"d - move ship right",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,start_display_speed);
+
+   print_text(x,y+15,"t - teleport",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,start_display_speed);
+   print_text(x,y+16,"f - fire photon torpedos",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,start_display_speed);
+   print_text(x,y+17,"i - fire ion cannon",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,start_display_speed);
+   print_text(x,y+18,"b - summon black hole",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,start_display_speed);
+
+   print_text(x,y+22,"Press any key to start",BG_WHITE_TXT_BLACK,A_BOLD,ALIGN_CENTER,start_display_speed);
+}
+
+void init_level(int level)
+{
+   int i;
+   for(i=0;i<NUMBER_OBJS;i++)
+         gameObjs[i].status = STATUS_DESTROYED;
+
+   spaceObj hero_spaceship;
+   init_hero_spaceship(&hero_spaceship);
+   gameObjs[0] = hero_spaceship;
+
+   switch(level)
+   {
+      case LEVEL_1:
+         init_asteroid(&gameObjs[1],BIG);
+         // a lot to do!
+      case LEVEL_2:
+      case LEVEL_3:
+      case LEVEL_4:
+      case FINAL_BOSS:
+         break;
+   }
+
+   level_timer = time(NULL);
+}
+
+void init_hero_spaceship(spaceObj *obj) 
+{
    int i,len,center_x,center_y;
    int spaceship_width = 38;
    int spaceship_height = 8;
@@ -350,13 +456,13 @@ spaceObj init_hero_spaceship()
    center_y /= 2;
 
    /* hardcode values because they are totally dependent on the ship's image */
-   obj.x0 = center_x - spaceship_width/2;
-   obj.x1 = center_x + spaceship_width/2;
-   obj.y0 = center_y - spaceship_height/2;
-   obj.y1 = center_y + spaceship_height/2;
+   obj->x0 = center_x - spaceship_width/2;
+   obj->x1 = center_x + spaceship_width/2;
+   obj->y0 = center_y - spaceship_height/2;
+   obj->y1 = center_y + spaceship_height/2;
 
-   obj.type = HERO_SPACESHIP;
-   obj.status = STATUS_ALIVE;
+   obj->type = HERO_SPACESHIP;
+   obj->status = STATUS_ALIVE;
 
    char **image = malloc(spaceship_height*sizeof(char*));
    for(i = 0; i < spaceship_height; i++)
@@ -371,10 +477,80 @@ spaceObj init_hero_spaceship()
    strcpy(image[6],"   ==  ... ...   ||||                ");
    strcpy(image[7],"   `--___________||||                ");
 
-    obj.image = image;
-
-    return obj;
+    obj->image = image;
 }
+
+
+void init_asteroid(spaceObj *obj,int size)
+{
+   int i,max_x,max_y;
+   int asteroid_width = 0;
+   int asteroid_height = 0;
+
+   getmaxyx(stdscr,max_y,max_x);       /* get screen width */
+   max_x--;
+
+   switch(size)
+   {
+	case SMALL:
+	     asteroid_height = 4;
+	     asteroid_width = 4;
+             break;
+        case MEDIUM:
+             asteroid_height = 6;
+             asteroid_width = 8;
+             break;
+        case BIG:
+             asteroid_height = 10;
+             asteroid_width = 18;
+             break;
+   }
+
+   /* hardcode values because they are totally dependent on the asteroid's image */
+   obj->x0 = max_x - asteroid_width;
+   obj->x1 = max_x;
+   obj->y0 = max_y-30 - asteroid_height/2;
+   obj->y1 = max_y-30 + asteroid_height/2;
+
+   obj->type = ASTEROID;
+
+   char **image = malloc(asteroid_height*sizeof(char*));
+   for(i = 0; i < asteroid_height; i++)
+        image[i] = malloc(asteroid_width*sizeof(char));
+
+   switch(size)
+   {
+        case SMALL:
+            strcpy(image[0]," __ ");
+            strcpy(image[1],"/  \\");
+            strcpy(image[2],"\\__/");
+	    strcpy(image[3],"    ");
+            break;
+        case MEDIUM:
+	    strcpy(image[0]," .-;;-. ");
+	    strcpy(image[1],"/      \\");
+            strcpy(image[2],"|      |");
+	    strcpy(image[3],"\\      /");
+	    strcpy(image[4]," '-..-' ");
+ 	    strcpy(image[5],"        ");
+            break;
+        case BIG:
+            strcpy(image[0],"      ______      ");
+            strcpy(image[1],"    .'      '.    ");
+            strcpy(image[2],"  .'          '.  ");
+            strcpy(image[3]," /              \\ ");
+            strcpy(image[4],";                ;");
+            strcpy(image[5],"|                |");
+            strcpy(image[6],";                ;");
+            strcpy(image[7]," \\              / ");
+            strcpy(image[8],"  '.          .'  ");
+            strcpy(image[9],"    '-.____.-'    ");
+            break;
+   }
+
+   obj->image = image;
+}
+
 
 void print_world()
 {
@@ -385,9 +561,18 @@ void print_world()
       {
       	print_obj(&gameObjs[i]);
       }
+      else if(gameObjs[i].status == STATUS_DESTROYED)
+      {
+        respawn_obj(&gameObjs[i]); 
+      }
    }
 }
 
+void respawn_obj(spaceObj *obj)
+{
+   int obj_status = obj->status;
+   obj->status = STATUS_ALIVE;
+}
 
 void print_obj(spaceObj *obj)
 {
@@ -447,45 +632,3 @@ void blast_them_with_ion_cannon()
    }
 }
 
-/*
-
-void print_asteroid(int size)
-{
-
-   switch(size)
-   {
-      case SMALL: 
-            center(22," ___ ");
-            center(23,"/   \\");
-            center(24,"\\___/");
-            break;
-
-      case MEDIUM:
-            center(22," .-;;-. ");
-            center(23,"/      \\");
-            center(24,"|        |");
-            center(25,"\\      /");
-            center(26,"  '-..-'  ");
-            break;
-
-      case HIGH:
-            center(22,"      ______      ");
-            center(23,"    .'      '.    ");
-            center(24,"  .'          '.  ");
-            center(25," /              \\ ");
-            center(26,";                ;");
-            center(27,"|                |");
-            center(28,";                ;");
-            center(29," \\              / ");
-            center(30,"  '.          .'  ");
-            center(31,"    '-.____.-'    ");
-   }
-}
-
-
-void print_photon_torpedo()
-{
-   center(22,"***");
-}
-               
-*/ 

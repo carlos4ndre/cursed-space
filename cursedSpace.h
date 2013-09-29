@@ -1,11 +1,17 @@
 #define SMALL 0
 #define MEDIUM 1
-#define HIGH 2
+#define BIG 2
 
 #define GAME_ON_MAIN_MENU 0
 #define GAME_RUNNING 1
 #define GAME_PAUSED 2
 #define GAME_FINISHED 3
+
+#define LEVEL_1 1
+#define LEVEL_2 2
+#define LEVEL_3 3
+#define LEVEL_4 4
+#define FINAL_BOSS 666
 
 #define HERO_SPACESHIP 0
 #define ALIEN_SPACESHIP 1
@@ -70,7 +76,12 @@ int random_number(int min_num, int max_num);
 
 void print_text(int x,int y, char *title,int color,int style,int align,int display_speed);
 void print_main_menu();
+void print_howto_menu();
 void print_world();
 void print_obj(spaceObj *obj);
 
-spaceObj init_hero_spaceship();
+void init_level(int level);
+void init_hero_spaceship(spaceObj *obj);
+void init_asteroid(spaceObj *obj,int size);
+void respawn_obj(spaceObj *obj);
+void check_level_status();
