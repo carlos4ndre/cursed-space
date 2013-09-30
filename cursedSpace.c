@@ -1,4 +1,5 @@
 #include "cursedSpace.h"
+#include "linked_list.h"
 #include <ncurses.h>
 #include <string.h>
 #include <stdlib.h>
