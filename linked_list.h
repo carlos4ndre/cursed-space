@@ -1,8 +1,6 @@
 #ifndef LINKED_LIST_H_
 #define LINKED_LIST_H_
 
-#define INVALID_DATA -1
-
 struct node
 {
    void *data;
@@ -18,10 +16,10 @@ struct linked_list
 };
 
 
-void init_linked_list(struct linked_list *list);
-void add_node_end(struct node *node,struct linked_list *list);
-void remove_node(struct node *node,struct linked_list *list);
+struct linked_list* init_linked_list();
+int add_node_end(struct node *node,struct linked_list *list);
 int get_linked_list_size(struct linked_list *list);
 struct node* get_node(struct linked_list *list,int position);
+int remove_node(struct linked_list *list,int position);
 
 #endif

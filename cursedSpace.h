@@ -79,9 +79,13 @@ void print_main_menu();
 void print_howto_menu();
 void print_world();
 void print_obj(spaceObj *obj);
+void init_space_obj_list();
+spaceObj* get_space_obj(int position);
+void add_space_obj(spaceObj *obj);
+int get_number_space_objs();
 
 void init_level(int level);
-void init_hero_spaceship(spaceObj *obj);
-void init_asteroid(spaceObj *obj,int size);
+spaceObj* init_hero_spaceship();
+spaceObj* init_asteroid(int size);
 void respawn_obj(spaceObj *obj);
 void check_level_status();

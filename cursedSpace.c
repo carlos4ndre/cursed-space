@@ -6,12 +6,12 @@
 #include <time.h>
 #include <sys/time.h>
 
-#define NUMBER_OBJS 20
+#define MAX_NUMBER_OBJS 20
 
 int level = 0;
 time_t level_timer = 0;
 int game_status = GAME_ON_MAIN_MENU;
-spaceObj gameObjs[NUMBER_OBJS];
+struct linked_list *gameObjs;
 
 /*****************************
 ** Where the universe starts
@@ -19,6 +19,7 @@ spaceObj gameObjs[NUMBER_OBJS];
 
 int main(void)
 {
+
    initialize();
 
    while(game_status != GAME_FINISHED) 
@@ -56,6 +57,7 @@ void initialize()
 
    bkgd(use_default_colors());
 
+   init_space_obj_list();
 
    init_level(LEVEL_1);
 }
@@ -107,6 +109,7 @@ void handle_user_input()
    char ch;
    struct timeval begin,end;
    double elapsed_time = 0,wait_time=0;
+   spaceObj *obj = get_space_obj(0);
 
    gettimeofday(&begin, NULL);
    timeout(50);
@@ -122,19 +125,19 @@ void handle_user_input()
    switch(ch) 
    {
       case PRESS_DOWN:
-           move_obj(DOWN,&gameObjs[0]);
+           move_obj(DOWN,obj);
            break;
       case PRESS_UP:
-           move_obj(UP,&gameObjs[0]);
+           move_obj(UP,obj);
            break;
       case PRESS_RIGHT:
-           move_obj(RIGHT,&gameObjs[0]);
+           move_obj(RIGHT,obj);
            break;
       case PRESS_LEFT:
-           move_obj(LEFT,&gameObjs[0]);
+           move_obj(LEFT,obj);
            break;
       case PRESS_FIRE_PHOTON_TORPEDOS:
-           move_obj(RIGHT,&gameObjs[0]);
+           move_obj(RIGHT,obj);
            break;
       case PRESS_ION_CANNON:
            blast_them_with_ion_cannon();
@@ -183,13 +186,14 @@ void check_level_status()
 
 void process_world_events()
 {
-   int obj_number, obj_type;
+   int i,total_num_objs;
+   total_num_objs = get_number_space_objs();
 
-   for(obj_number=1;obj_number<NUMBER_OBJS;obj_number++)
+   for(i=0;i<total_num_objs;i++)
    {
-	obj_type = gameObjs[obj_number].type;
+	spaceObj *obj = get_space_obj(i);
 
-	switch(obj_type)
+	switch(obj->type)
 	{
             case HERO_SPACESHIP:
                 // multiplayer? :) 
@@ -198,7 +202,7 @@ void process_world_events()
                 // do something
                 break;
             case ASTEROID:
-                move_obj(LEFT,&gameObjs[obj_number]);
+                move_obj(LEFT,obj);
                 break;
             default:
 		// do something
@@ -217,33 +221,34 @@ void teleport()
    int max_x,max_y;
    int middle_screen;
    int x0,x1,len;
+   spaceObj *obj = get_space_obj(0);
 
    getmaxyx(stdscr,max_y,max_x);
    middle_screen = max_x/2;
 
-   x0 = gameObjs[0].x0;
-   x1 = gameObjs[0].x1;
+   x0 = obj->x0;
+   x1 = obj->x1;
    len = x1 - x0;
 
    if(x0 > middle_screen && x0-middle_screen > 0)
    {
-          gameObjs[0].x0 -= middle_screen;
-          gameObjs[0].x1 -= middle_screen;
+          obj->x0 -= middle_screen;
+          obj->x1 -= middle_screen;
    }
    else if(x0 > middle_screen && x0-middle_screen/2 > 0)
    {
-          gameObjs[0].x0 -= middle_screen/2;
-          gameObjs[0].x1 -= middle_screen/2;
+          obj->x0 -= middle_screen/2;
+          obj->x1 -= middle_screen/2;
    }
    else if(x1 < middle_screen && x1+middle_screen < max_x) 
    {
-          gameObjs[0].x0 += middle_screen;
-	  gameObjs[0].x1 += middle_screen;
+          obj->x0 += middle_screen;
+	  obj->x1 += middle_screen;
    }
    else //if(x1 < middle_screen && x1+middle_screen/2 < max_x)
    {
-          gameObjs[0].x0 += middle_screen/2;
-          gameObjs[0].x1 += middle_screen/2;
+          obj->x0 += middle_screen/2;
+          obj->x1 += middle_screen/2;
    }
 }
 
@@ -423,19 +428,20 @@ void print_howto_menu()
 
 void init_level(int level)
 {
-   int i;
-   for(i=0;i<NUMBER_OBJS;i++)
-         gameObjs[i].status = STATUS_DESTROYED;
+   int i, num_objs;
 
-   spaceObj hero_spaceship;
-   init_hero_spaceship(&hero_spaceship);
-   gameObjs[0] = hero_spaceship;
+   // add hero spaceship to the world 
+   spaceObj *hero_spaceship = init_hero_spaceship();
+   add_space_obj(hero_spaceship);
 
    switch(level)
    {
       case LEVEL_1:
-         init_asteroid(&gameObjs[1],BIG);
-         // a lot to do!
+	    // add small asteroid to the world
+            for(i=0;i<1;i++) {
+                 spaceObj *small_asteroid = init_asteroid(SMALL);
+                 add_space_obj(small_asteroid);
+            }
       case LEVEL_2:
       case LEVEL_3:
       case LEVEL_4:
@@ -446,8 +452,9 @@ void init_level(int level)
    level_timer = time(NULL);
 }
 
-void init_hero_spaceship(spaceObj *obj) 
+spaceObj* init_hero_spaceship() 
 {
+   spaceObj *obj = (spaceObj *) malloc(sizeof(spaceObj));
    int i,len,center_x,center_y;
    int spaceship_width = 38;
    int spaceship_height = 8;
@@ -478,12 +485,15 @@ void init_hero_spaceship(spaceObj *obj)
    strcpy(image[6],"   ==  ... ...   ||||                ");
    strcpy(image[7],"   `--___________||||                ");
 
-    obj->image = image;
+   obj->image = image;
+
+   return obj;
 }
 
 
-void init_asteroid(spaceObj *obj,int size)
+spaceObj* init_asteroid(int size)
 {
+   spaceObj *obj = (spaceObj *) malloc(sizeof(spaceObj));
    int i,max_x,max_y;
    int asteroid_width = 0;
    int asteroid_height = 0;
@@ -550,21 +560,27 @@ void init_asteroid(spaceObj *obj,int size)
    }
 
    obj->image = image;
+
+   return obj;
 }
 
 
 void print_world()
 {
-   int i;
-   for(i=0;i<NUMBER_OBJS;i++)
+   int i,total_num_objs;
+   total_num_objs = get_number_space_objs();
+
+   for(i=0;i<total_num_objs;i++)
    {
-      if(gameObjs[i].status != STATUS_DESTROYED) 
+      spaceObj *obj = get_space_obj(i);
+
+      if(obj->status != STATUS_DESTROYED) 
       {
-      	print_obj(&gameObjs[i]);
+      	print_obj(obj);
       }
-      else if(gameObjs[i].status == STATUS_DESTROYED)
+      else if(obj->status == STATUS_DESTROYED)
       {
-        respawn_obj(&gameObjs[i]); 
+        respawn_obj(obj); 
       }
    }
 }
@@ -612,14 +628,15 @@ void summon_black_hole()
 
 void blast_them_with_ion_cannon()
 {
+   spaceObj *obj = get_space_obj(0);
    int max_x,max_y;
    int x1,y0,y1;
    int column,line;
    getmaxyx(stdscr,max_y,max_x);
 
-   x1 = gameObjs[0].x1;
-   y0 = gameObjs[0].y0;
-   y1 = gameObjs[0].y1;
+   x1 = obj->x1;
+   y0 = obj->y0;
+   y1 = obj->y1;
 
    for(column=x1;column<max_x;column++) 
    {
@@ -633,3 +650,26 @@ void blast_them_with_ion_cannon()
    }
 }
 
+/***************************
+***  List utils                
+***************************/
+
+void init_space_obj_list() {
+    gameObjs = init_linked_list();
+}
+
+spaceObj* get_space_obj(int position) {
+    return get_node(gameObjs,position)->data;
+}
+
+void add_space_obj(spaceObj *obj) {
+
+    struct node *node = (struct node*) malloc(sizeof(struct node));
+    node->data = obj;
+
+    add_node_end(node,gameObjs);
+}
+
+int get_number_space_objs() {
+    return get_linked_list_size(gameObjs);
+}

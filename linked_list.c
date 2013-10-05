@@ -2,25 +2,26 @@
 #include <stdlib.h>
 #include "linked_list.h"
 
-void init_linked_list(struct linked_list *list)
+struct linked_list* init_linked_list()
 {
-   list = (struct linked_list*) malloc(sizeof(struct linked_list));
-  
+   struct linked_list *list = (struct linked_list *) malloc(sizeof(struct linked_list));
    list->head = NULL;
    list->tail = NULL;
    list->size = 0; 
+
+   return list;
 }
 
-void add_node_end(struct node *node,struct linked_list *list)
+int add_node_end(struct node *node,struct linked_list *list)
 {
    if(list == NULL) {
-       printf("[!] Cannot add element to empty list.");
-       exit INVALID_DATA;
+       printf("[!] List is not properly initialized.\n");
+       return -1;
    }
 
    if(node == NULL) {
-       printf("[!] Cannot add element to empty list.");
-       exit INVALID_DATA;
+       printf("[!] Node is empty.\n");
+       return -1;
    }
 
    if(list->head == NULL)
@@ -28,7 +29,7 @@ void add_node_end(struct node *node,struct linked_list *list)
        node->next = NULL;
        node->previous = NULL;
        list->head = node;
-       list->tail = list->head;
+       list->tail = node;
    }
    else
    {
@@ -43,18 +44,21 @@ void add_node_end(struct node *node,struct linked_list *list)
    }
 
    list->size++;
+
+   return 0;
 }
 
-void remove_node(struct node *node,struct linked_list *list)
+int remove_node(struct linked_list *list,int position)
 {
    if(list == NULL) {
-       printf("[!] Cannot remove element on empty list.");
-       exit INVALID_DATA;
+       printf("[!] Cannot remove element on empty list.\n");
+       return -1;
    }
 
-   if(node == NULL) {
-       printf("[!] Cannot remove element with empty node.");
-       exit INVALID_DATA;
+   if(position < 0 || position > list->size-1)
+   {
+       printf("[!] Invalid position.\n");
+       return -1;
    }
 
    if(list->size == 1) 
@@ -65,12 +69,33 @@ void remove_node(struct node *node,struct linked_list *list)
    }
    else
    {
-       struct node *tmp = node;
-       node->previous->next = node->next;
+       int i;
+       struct node *tmp = list->head;
+
+       for(i=0;i<list->size;i++)
+       {
+           if(i == position)
+               break;
+
+           if(tmp == NULL) {
+               printf("[!] Inconsistent data, position should be valid.");
+               return -1;
+           }
+           tmp = tmp->next;
+       }
+
+       if(tmp == list->head)
+           list->head = tmp->next;
+
+       if(tmp->previous != NULL)
+           tmp->previous->next = tmp->next;
+
        free(tmp);
    }
 
    list->size--;
+
+   return 0;
 }
 
 int get_linked_list_size(struct linked_list *list)
@@ -83,20 +108,31 @@ int get_linked_list_size(struct linked_list *list)
 
 struct node* get_node(struct linked_list *list,int position)
 {
-    if(list == NULL && list->size == 0)
-    {
-       printf("[!] Cannot get node from an empty node.");
-       exit INVALID_DATA; 
-    }
+   if(list == NULL || list->head == NULL)
+   {
+       printf("[!] Cannot get node from an empty node.\n");
+       return NULL; 
+   }
+
+   if(position < 0 || position > list->size-1)
+   {
+       printf("[!] Invalid position.\n");
+       return NULL;
+   }
+
 
     struct node* tmp = list->head;
     int i = 0;
 
-    while(tmp->next != NULL) {
-        if(i == position)
-              return tmp;
-        if(tmp->next != NULL)
-              tmp = tmp->next;
-        i++;
+    while(tmp != NULL) {
+       if(i == position)
+            break;
+
+       if(tmp->next != NULL)
+            tmp = tmp->next;
+
+       i++;
     }
+
+    return tmp;
 }
