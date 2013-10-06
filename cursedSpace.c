@@ -14,6 +14,7 @@ int num_black_holes;
 int score = 0;
 int kills = 0;
 int level = 0;
+int direction = RIGHT;
 time_t level_timer = 0;
 int game_status = GAME_ON_MAIN_MENU;
 struct linked_list *gameObjs;
@@ -135,18 +136,22 @@ void handle_user_input()
       case PRESS_DOWN:
            obj = get_space_obj(0);
            move_obj(DOWN,obj);
+           direction = DOWN;
            break;
       case PRESS_UP:
            obj = get_space_obj(0);
            move_obj(UP,obj);
+           direction = UP;
            break;
       case PRESS_RIGHT:
            obj = get_space_obj(0);
            move_obj(RIGHT,obj);
+           direction = RIGHT; 
            break;
       case PRESS_LEFT:
            obj = get_space_obj(0);
            move_obj(LEFT,obj);
+           direction = LEFT;
            break;
       case PRESS_FIRE_PHOTON_TORPEDOS:
            if(num_photon_torpedos > 0) {
@@ -254,37 +259,52 @@ void process_world_events()
 void teleport() 
 {
    int max_x,max_y;
-   int middle_screen;
-   int x0,x1,len;
+   int x0,x1,y0,y1,width,height;
    spaceObj *obj = get_space_obj(0);
 
    getmaxyx(stdscr,max_y,max_x);
-   middle_screen = max_x/2;
 
    x0 = obj->x0;
    x1 = obj->x1;
-   len = x1 - x0;
+   y0 = obj->y0;
+   y1 = obj->y1; 
+   width = x1 - x0;
+   height = y1 - y0;
 
-   if(x0 > middle_screen && x0-middle_screen > 0)
-   {
-          obj->x0 -= middle_screen;
-          obj->x1 -= middle_screen;
+   switch(direction) {
+      case UP:
+           if(y0-TELEPORT_RANGE <= 0)
+                return;
+           y0 -= TELEPORT_RANGE;
+           y1 -= TELEPORT_RANGE;
+           break;
+      case DOWN:
+           if(y1+TELEPORT_RANGE >= max_y)
+                return;
+
+           y0 += TELEPORT_RANGE;
+           y1 += TELEPORT_RANGE;
+           break;
+      case LEFT:
+           if(x0-TELEPORT_RANGE <= 0)
+                return;
+
+           x0 -= TELEPORT_RANGE;
+           x1 -= TELEPORT_RANGE;
+           break;
+      case RIGHT:
+           if(x1+TELEPORT_RANGE >= max_x)
+                return;
+
+           x0 += TELEPORT_RANGE;
+           x1 += TELEPORT_RANGE;
+           break;
    }
-   else if(x0 > middle_screen && x0-middle_screen/2 > 0)
-   {
-          obj->x0 -= middle_screen/2;
-          obj->x1 -= middle_screen/2;
-   }
-   else if(x1 < middle_screen && x1+middle_screen < max_x) 
-   {
-          obj->x0 += middle_screen;
-	  obj->x1 += middle_screen;
-   }
-   else //if(x1 < middle_screen && x1+middle_screen/2 < max_x)
-   {
-          obj->x0 += middle_screen/2;
-          obj->x1 += middle_screen/2;
-   }
+
+   obj->x0 = x0;
+   obj->x1 = x1;
+   obj->y0 = y0;
+   obj->y1 = y1;
 }
 
 void move_obj(int direction,spaceObj *obj)

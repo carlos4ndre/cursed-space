@@ -48,6 +48,8 @@
 #define LEFT 2
 #define RIGHT 3
 
+#define TELEPORT_RANGE 50
+
 #define NONE 0
 #define ALIGN_CENTER 1
 #define BG_WHITE_TXT_BLACK 1
