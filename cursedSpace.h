@@ -48,7 +48,8 @@
 #define LEFT 2
 #define RIGHT 3
 
-#define TELEPORT_RANGE 50
+#define TELEPORT_RANGE_X 50
+#define TELEPORT_RANGE_Y 20
 
 #define NONE 0
 #define ALIGN_CENTER 1

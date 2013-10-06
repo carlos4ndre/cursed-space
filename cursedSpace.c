@@ -273,31 +273,44 @@ void teleport()
 
    switch(direction) {
       case UP:
-           if(y0-TELEPORT_RANGE <= 0)
-                return;
-           y0 -= TELEPORT_RANGE;
-           y1 -= TELEPORT_RANGE;
+           if(y0-TELEPORT_RANGE_Y <= 0) {
+                y0 = 1;
+                y1 = height+1;
+           }
+           else {
+                y0 -= TELEPORT_RANGE_Y;
+                y1 -= TELEPORT_RANGE_Y;
+           }
            break;
       case DOWN:
-           if(y1+TELEPORT_RANGE >= max_y)
-                return;
-
-           y0 += TELEPORT_RANGE;
-           y1 += TELEPORT_RANGE;
+           if(y1+TELEPORT_RANGE_Y >= max_y) {
+                y0 = max_y-height-1;
+                y1 = max_y-1;
+           }
+           else {
+                y0 += TELEPORT_RANGE_Y;
+                y1 += TELEPORT_RANGE_Y;
+           }
            break;
       case LEFT:
-           if(x0-TELEPORT_RANGE <= 0)
-                return;
-
-           x0 -= TELEPORT_RANGE;
-           x1 -= TELEPORT_RANGE;
+           if(x0-TELEPORT_RANGE_X <= 0) {
+                x0 = 1;
+                x1 = width+1; 
+           }
+           else {
+                x0 -= TELEPORT_RANGE_X;
+                x1 -= TELEPORT_RANGE_X;
+           }
            break;
       case RIGHT:
-           if(x1+TELEPORT_RANGE >= max_x)
-                return;
-
-           x0 += TELEPORT_RANGE;
-           x1 += TELEPORT_RANGE;
+           if(x1+TELEPORT_RANGE_X >= max_x) {
+                x0 = max_x-width-1;
+                x1 = max_x-1;
+           }
+           else {
+                x0 += TELEPORT_RANGE_X;
+                x1 += TELEPORT_RANGE_X;
+           }
            break;
    }
 
