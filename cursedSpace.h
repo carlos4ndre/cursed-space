@@ -50,12 +50,14 @@
 #define BG_WHITE_TXT_RED 4
 #define BG_BLACK_TXT_BLACK 5
 #define BG_BLUE_TXT_WHITE 6
+#define BG_RED_TXT_WHITE 7
 
 typedef struct spaceObj
 {
    int x0,x1,y0,y1;
    int type;
    int status;
+   int color;
    char **image;
 } spaceObj;
 
@@ -71,7 +73,6 @@ void process_world_events();
 void move_obj(int direction,spaceObj *obj);
 void teleport();
 void summon_black_hole();
-void blast_them_with_ion_cannon();
 int random_number(int min_num, int max_num);
 
 void print_text(int x,int y, char *title,int color,int style,int align,int display_speed);
@@ -88,5 +89,6 @@ void init_level(int level);
 spaceObj* init_hero_spaceship();
 spaceObj* init_asteroid(int size);
 spaceObj* init_photon_torpedo(int rel_x1,int rel_y1);
+spaceObj* init_ion_cannon(int rel_x1,int rel_y1);
 void respawn_obj(spaceObj *obj);
 void check_level_status();

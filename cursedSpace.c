@@ -54,6 +54,7 @@ void initialize()
    init_pair(BG_WHITE_TXT_RED,COLOR_RED,COLOR_WHITE);
    init_pair(BG_BLACK_TXT_BLACK,COLOR_BLACK,COLOR_BLACK);
    init_pair(BG_BLUE_TXT_WHITE,COLOR_WHITE,COLOR_BLUE);
+   init_pair(BG_RED_TXT_WHITE,COLOR_WHITE,COLOR_RED);
 
    bkgd(use_default_colors());
 
@@ -109,6 +110,7 @@ void handle_user_input()
    char ch;
    struct timeval begin,end;
    double elapsed_time = 0,wait_time=0;
+   int x1,y1;
    spaceObj *obj;
 
    gettimeofday(&begin, NULL);
@@ -142,12 +144,17 @@ void handle_user_input()
            break;
       case PRESS_FIRE_PHOTON_TORPEDOS:
            obj = get_space_obj(0);
-           int x1=obj->x1, y1=obj->y1;
+           x1=obj->x1;
+           y1=obj->y1;
            obj = init_photon_torpedo(x1,y1);
            add_space_obj(obj);
            break;
       case PRESS_ION_CANNON:
-           blast_them_with_ion_cannon();
+           obj = get_space_obj(0);
+           x1=obj->x1;
+           y1=obj->y1;
+           obj = init_ion_cannon(x1,y1);
+           add_space_obj(obj);
            break;
       case PRESS_WARP:
            teleport();
@@ -212,6 +219,9 @@ void process_world_events()
                 move_obj(LEFT,obj);
                 break;
             case PHOTON_TORPEDO:
+                move_obj(RIGHT,obj);
+                break;
+            case ION_CANNON:
                 move_obj(RIGHT,obj);
                 break;
             default:
@@ -481,6 +491,7 @@ spaceObj* init_hero_spaceship()
 
    obj->type = HERO_SPACESHIP;
    obj->status = STATUS_ALIVE;
+   obj->color = BG_WHITE_TXT_BLACK;
 
    char **image = malloc(spaceship_height*sizeof(char*));
    for(i = 0; i < spaceship_height; i++)
@@ -515,6 +526,7 @@ spaceObj* init_photon_torpedo(int rel_x1,int rel_y1)
 
    obj->type = PHOTON_TORPEDO;
    obj->status = STATUS_ALIVE;
+   obj->color = BG_RED_TXT_WHITE;
 
    char **image = malloc(photon_torpedo_height*sizeof(char*));
    for(i = 0; i < photon_torpedo_height; i++)
@@ -522,6 +534,41 @@ spaceObj* init_photon_torpedo(int rel_x1,int rel_y1)
 
    strcpy(image[0],"****");
    strcpy(image[1],"****");
+
+   obj->image = image;
+
+   return obj;
+}
+
+spaceObj* init_ion_cannon(int rel_x1,int rel_y1)
+{
+   spaceObj *obj = (spaceObj *) malloc(sizeof(spaceObj));
+   int i;
+   int ion_cannon_width = 20;
+   int ion_cannon_height = 8;
+
+   /* hardcode values because they are totally dependent on the image */
+   obj->x0 = rel_x1;
+   obj->x1 = rel_x1 + ion_cannon_width;
+   obj->y0 = rel_y1 - ion_cannon_height;
+   obj->y1 = rel_y1;
+
+   obj->type = ION_CANNON;
+   obj->status = STATUS_ALIVE;
+   obj->color = BG_BLUE_TXT_WHITE;
+
+   char **image = malloc(ion_cannon_height*sizeof(char*));
+   for(i = 0; i < ion_cannon_height; i++)
+        image[i] = malloc( ion_cannon_width*sizeof(char));
+
+   strcpy(image[0],"~-~-~-~-~-~-~-~-~-~");
+   strcpy(image[1],"~-~-~-~-~-~-~-~-~-~");
+   strcpy(image[2],"~-~-~-~-~-~-~-~-~-~");
+   strcpy(image[3],"~-~-~-~-~-~-~-~-~-~");
+   strcpy(image[4],"~-~-~-~-~-~-~-~-~-~");
+   strcpy(image[5],"~-~-~-~-~-~-~-~-~-~");
+   strcpy(image[6],"~-~-~-~-~-~-~-~-~-~");
+   strcpy(image[7],"~-~-~-~-~-~-~-~-~-~");
 
    obj->image = image;
 
@@ -561,6 +608,7 @@ spaceObj* init_asteroid(int size)
    obj->y1 = max_y-30 + asteroid_height/2;
 
    obj->type = ASTEROID;
+   obj->color = BG_WHITE_TXT_BLACK;
 
    char **image = malloc(asteroid_height*sizeof(char*));
    for(i = 0; i < asteroid_height; i++)
@@ -632,10 +680,12 @@ void print_obj(spaceObj *obj)
 {
    char **image = obj->image;
    int x,y,max_lines = obj->y1-obj->y0;
+   int type = obj->type;
+   int color = obj->color;
 
-   for(y=0;y<max_lines;y++,image++) 
+   for(y=0;y<max_lines;y++,image++)
    {
-      print_text(obj->x0,obj->y0+y,*image,BG_WHITE_TXT_BLACK,NONE,NONE,0);
+           print_text(obj->x0,obj->y0+y,*image,color,NONE,NONE,0);
    }
 }
 
@@ -662,30 +712,6 @@ void summon_black_hole()
     }
 }
 
-
-void blast_them_with_ion_cannon()
-{
-   spaceObj *obj = get_space_obj(0);
-   int max_x,max_y;
-   int x1,y0,y1;
-   int column,line;
-   getmaxyx(stdscr,max_y,max_x);
-
-   x1 = obj->x1;
-   y0 = obj->y0;
-   y1 = obj->y1;
-
-   for(column=x1;column<max_x;column++) 
-   {
-       for(line=y0;line<y1;line++) 
-       {
-            if(column % 2)
-            	print_text(column,line,"-",BG_BLUE_TXT_WHITE,NONE,NONE,1);
-            else
-                print_text(column,line,"~",BG_BLUE_TXT_WHITE,NONE,NONE,1);
-       }
-   }
-}
 
 /***************************
 ***  List utils                
