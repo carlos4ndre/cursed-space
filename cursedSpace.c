@@ -70,11 +70,11 @@ void render()
    switch(game_status)
    {
       case GAME_ON_MAIN_MENU:
-            print_main_menu();
-            getchar();
- 	    clear();
-            print_howto_menu();
-            getchar();
+            //print_main_menu();
+            //getchar();
+ 	    //clear();
+            //print_howto_menu();
+            //getchar();
             game_status = GAME_RUNNING;
             break;
       case GAME_RUNNING:
@@ -109,7 +109,7 @@ void handle_user_input()
    char ch;
    struct timeval begin,end;
    double elapsed_time = 0,wait_time=0;
-   spaceObj *obj = get_space_obj(0);
+   spaceObj *obj;
 
    gettimeofday(&begin, NULL);
    timeout(50);
@@ -121,23 +121,30 @@ void handle_user_input()
    wait_time = 50 - elapsed_time; 
 
    napms(wait_time);
- 
+
    switch(ch) 
    {
       case PRESS_DOWN:
+           obj = get_space_obj(0);
            move_obj(DOWN,obj);
            break;
       case PRESS_UP:
+           obj = get_space_obj(0);
            move_obj(UP,obj);
            break;
       case PRESS_RIGHT:
+           obj = get_space_obj(0);
            move_obj(RIGHT,obj);
            break;
       case PRESS_LEFT:
+           obj = get_space_obj(0);
            move_obj(LEFT,obj);
            break;
       case PRESS_FIRE_PHOTON_TORPEDOS:
-           move_obj(RIGHT,obj);
+           obj = get_space_obj(0);
+           int x1=obj->x1, y1=obj->y1;
+           obj = init_photon_torpedo(x1,y1);
+           add_space_obj(obj);
            break;
       case PRESS_ION_CANNON:
            blast_them_with_ion_cannon();
@@ -203,6 +210,9 @@ void process_world_events()
                 break;
             case ASTEROID:
                 move_obj(LEFT,obj);
+                break;
+            case PHOTON_TORPEDO:
+                move_obj(RIGHT,obj);
                 break;
             default:
 		// do something
@@ -490,6 +500,33 @@ spaceObj* init_hero_spaceship()
    return obj;
 }
 
+spaceObj* init_photon_torpedo(int rel_x1,int rel_y1)
+{
+   spaceObj *obj = (spaceObj *) malloc(sizeof(spaceObj));
+   int i;
+   int photon_torpedo_width = 4;
+   int photon_torpedo_height = 2;
+
+   /* hardcode values because they are totally dependent on the image */
+   obj->x0 = rel_x1;
+   obj->x1 = rel_x1 + photon_torpedo_width;
+   obj->y0 = rel_y1 - photon_torpedo_height;
+   obj->y1 = rel_y1;
+
+   obj->type = PHOTON_TORPEDO;
+   obj->status = STATUS_ALIVE;
+
+   char **image = malloc(photon_torpedo_height*sizeof(char*));
+   for(i = 0; i < photon_torpedo_height; i++)
+        image[i] = malloc( photon_torpedo_width*sizeof(char));
+
+   strcpy(image[0],"****");
+   strcpy(image[1],"****");
+
+   obj->image = image;
+
+   return obj;
+}
 
 spaceObj* init_asteroid(int size)
 {

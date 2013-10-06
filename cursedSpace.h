@@ -87,5 +87,6 @@ int get_number_space_objs();
 void init_level(int level);
 spaceObj* init_hero_spaceship();
 spaceObj* init_asteroid(int size);
+spaceObj* init_photon_torpedo(int rel_x1,int rel_y1);
 void respawn_obj(spaceObj *obj);
 void check_level_status();
