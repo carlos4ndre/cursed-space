@@ -7,6 +7,7 @@
 #define GAME_PAUSED 2
 #define GAME_FINISHED 3
 
+#define LEVEL_TIMER 120
 #define LEVEL_1 1
 #define LEVEL_2 2
 #define LEVEL_3 3
@@ -28,11 +29,16 @@
 #define PRESS_WARP 't'
 #define PRESS_MASSIVE_BLACK_HOLE 'b'
 
-#define MAX_SHIELD 10
-#define MAX_PHOTON_TORPEDOS 5
-#define MAX_ION_CANNON 1
+#define SHIELD_HERO 100
+#define SHIELD_SMALL_ASTROID 10
+#define SHIELD_MEDIUM_ASTROID 20
+#define SHIELD_BIG_ASTROID 30
+#define SHIELD_ALIEN_SPACESHIP 40
+#define SHIELD_BOSS 500
+
+#define MAX_PHOTON_TORPEDOS 200
+#define MAX_ION_CANNON 50
 #define MAX_BLACK_HOLE 1
-#define MAX_WARP 1
 
 #define STATUS_ALIVE 0
 #define STATUS_DESTROYED 1
@@ -57,6 +63,7 @@ typedef struct spaceObj
    int x0,x1,y0,y1;
    int type;
    int status;
+   int shield;
    int color;
    char **image;
 } spaceObj;
@@ -79,6 +86,7 @@ void print_text(int x,int y, char *title,int color,int style,int align,int displ
 void print_main_menu();
 void print_howto_menu();
 void print_world();
+void print_status_bar();
 void print_obj(spaceObj *obj);
 void init_space_obj_list();
 spaceObj* get_space_obj(int position);

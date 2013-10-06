@@ -8,6 +8,11 @@
 
 #define MAX_NUMBER_OBJS 20
 
+int num_photon_torpedos;
+int num_ion_cannons;
+int num_black_holes;
+int score = 0;
+int kills = 0;
 int level = 0;
 time_t level_timer = 0;
 int game_status = GAME_ON_MAIN_MENU;
@@ -80,6 +85,7 @@ void render()
             break;
       case GAME_RUNNING:
 	    print_world();
+            print_status_bar();
             break;
       case GAME_PAUSED:
             break;
@@ -143,24 +149,33 @@ void handle_user_input()
            move_obj(LEFT,obj);
            break;
       case PRESS_FIRE_PHOTON_TORPEDOS:
-           obj = get_space_obj(0);
-           x1=obj->x1;
-           y1=obj->y1;
-           obj = init_photon_torpedo(x1,y1);
-           add_space_obj(obj);
+           if(num_photon_torpedos > 0) {
+                obj = get_space_obj(0);
+                x1=obj->x1;
+                y1=obj->y1;
+                obj = init_photon_torpedo(x1,y1);
+                add_space_obj(obj);
+                num_photon_torpedos--;
+           }
            break;
       case PRESS_ION_CANNON:
-           obj = get_space_obj(0);
-           x1=obj->x1;
-           y1=obj->y1;
-           obj = init_ion_cannon(x1,y1);
-           add_space_obj(obj);
+           if(num_ion_cannons > 0) {
+               obj = get_space_obj(0);
+               x1=obj->x1; 
+               y1=obj->y1;
+               obj = init_ion_cannon(x1,y1);
+               add_space_obj(obj);
+               num_ion_cannons--; 
+           } 
            break;
       case PRESS_WARP:
            teleport();
            break;
       case PRESS_MASSIVE_BLACK_HOLE:
-           summon_black_hole();
+           if(num_black_holes > 0) {
+               summon_black_hole();
+               num_black_holes--;
+           }
            break;
    }
 }
@@ -171,7 +186,7 @@ void check_level_status()
     time_t now = time(NULL);	
     int elapsed_time = now - level_timer;
 
-    if(elapsed_time < 60) 
+    if(elapsed_time < LEVEL_TIMER) 
           return;
 
     switch(level)
@@ -454,6 +469,11 @@ void init_level(int level)
    spaceObj *hero_spaceship = init_hero_spaceship();
    add_space_obj(hero_spaceship);
 
+   // reset weapons' ammo
+   num_photon_torpedos = MAX_PHOTON_TORPEDOS;
+   num_ion_cannons = MAX_ION_CANNON;
+   num_black_holes = MAX_BLACK_HOLE;
+
    switch(level)
    {
       case LEVEL_1:
@@ -492,6 +512,7 @@ spaceObj* init_hero_spaceship()
    obj->type = HERO_SPACESHIP;
    obj->status = STATUS_ALIVE;
    obj->color = BG_WHITE_TXT_BLACK;
+   obj->shield = SHIELD_HERO;
 
    char **image = malloc(spaceship_height*sizeof(char*));
    for(i = 0; i < spaceship_height; i++)
@@ -590,14 +611,17 @@ spaceObj* init_asteroid(int size)
 	case SMALL:
 	     asteroid_height = 4;
 	     asteroid_width = 4;
+             obj->shield = SHIELD_SMALL_ASTROID;
              break;
         case MEDIUM:
              asteroid_height = 6;
              asteroid_width = 8;
+             obj->shield = SHIELD_MEDIUM_ASTROID;
              break;
         case BIG:
              asteroid_height = 10;
              asteroid_width = 18;
+             obj->shield = SHIELD_BIG_ASTROID;
              break;
    }
 
@@ -670,6 +694,46 @@ void print_world()
    }
 }
 
+void print_status_bar()
+{
+   int elapsed_time,time_left;
+   int len=0,margin=5;
+   char str[20];
+
+   spaceObj *obj = get_space_obj(0);
+
+   time_t now = time(NULL);
+   elapsed_time = now - level_timer;
+   time_left = LEVEL_TIMER - elapsed_time;
+
+   sprintf(str, "Shield: %d%",obj->shield);
+   print_text(len,0,str,BG_WHITE_TXT_BLACK,NONE,NONE,0);
+   len += strlen(str) + margin;
+
+   sprintf(str, "Photon Torpedo: %d%",num_photon_torpedos);
+   print_text(len,0,str,BG_WHITE_TXT_BLACK,NONE,NONE,0);
+   len += strlen(str) + margin;
+
+   sprintf(str, "Ion Cannon: %d%",num_ion_cannons);
+   print_text(len,0,str,BG_WHITE_TXT_BLACK,NONE,NONE,0);
+   len += strlen(str) + margin;
+
+   sprintf(str, "Black Hole: %d%",num_black_holes);
+   print_text(len,0,str,BG_WHITE_TXT_BLACK,NONE,NONE,0);
+   len += strlen(str) + margin;
+
+   sprintf(str, "Time: %d%",time_left);
+   print_text(len,0,str,BG_WHITE_TXT_BLACK,NONE,NONE,0);
+   len += strlen(str) + margin;
+
+   sprintf(str, "Enemies Killed: %d%",kills);
+   print_text(len,0,str,BG_WHITE_TXT_BLACK,NONE,NONE,0);
+   len += strlen(str) + margin;
+
+   sprintf(str, "Score: %d%",score);
+   print_text(len,0,str,BG_WHITE_TXT_BLACK,NONE,NONE,0);
+}
+
 void respawn_obj(spaceObj *obj)
 {
    int obj_status = obj->status;
@@ -704,9 +768,9 @@ void summon_black_hole()
    for(x=0;x<x_center;x++) {
       for(y=0;y<y_center;y++) 
       {
-   	  print_text(x_center+x,y_center+y,"*",BG_BLACK_TXT_BLACK,NONE,NONE,1);
-	  print_text(x_center+x,y_center-y,"*",BG_BLACK_TXT_BLACK,NONE,NONE,1);
-          print_text(x_center-x,y_center+y,"*",BG_BLACK_TXT_BLACK,NONE,NONE,1);
+   	  print_text(x_center+x,y_center+y,"*",BG_BLACK_TXT_BLACK,NONE,NONE,0);
+	  print_text(x_center+x,y_center-y,"*",BG_BLACK_TXT_BLACK,NONE,NONE,0);
+          print_text(x_center-x,y_center+y,"*",BG_BLACK_TXT_BLACK,NONE,NONE,0);
           print_text(x_center-x,y_center-y,"*",BG_BLACK_TXT_BLACK,NONE,NONE,1);
       }
     }
