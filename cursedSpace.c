@@ -6,16 +6,15 @@
 #include <time.h>
 #include <sys/time.h>
 
-#define MAX_NUMBER_OBJS 20
-
 int num_photon_torpedos;
 int num_ion_cannons;
 int num_black_holes;
 int score = 0;
 int kills = 0;
-int level = 0;
+int current_level = 0;
 int direction = RIGHT;
 time_t level_timer = 0;
+time_t respawn_interval = RESPAWN_INTERVAL;
 int game_status = GAME_ON_MAIN_MENU;
 struct linked_list *gameObjs;
 
@@ -194,22 +193,18 @@ void check_level_status()
     if(elapsed_time < LEVEL_TIMER) 
           return;
 
-    switch(level)
+    switch(current_level)
     {
        case LEVEL_1: 
-           level = LEVEL_2;
            init_level(LEVEL_2);
            break;
        case LEVEL_2: 
-           level = LEVEL_3;
            init_level(LEVEL_3);
            break;
        case LEVEL_3: 
-           level = LEVEL_4;
            init_level(LEVEL_4);
            break;
        case LEVEL_4: 
-           level = FINAL_BOSS;
            init_level(FINAL_BOSS);
            break;
        case FINAL_BOSS:
@@ -220,7 +215,7 @@ void check_level_status()
 
 void process_world_events()
 {
-   int i,total_num_objs;
+   int i,total_num_objs,total_num_enemies;
    total_num_objs = get_number_space_objs();
 
    for(i=0;i<total_num_objs;i++)
@@ -249,6 +244,17 @@ void process_world_events()
                 break;
 	}
    }
+
+
+  time_t now = time(NULL);
+  int elapsed_time = now - respawn_interval;
+  total_num_enemies = get_number_enemies();
+
+  if(total_num_enemies < MAX_NUM_ENEMIES && elapsed_time > RESPAWN_INTERVAL)
+  {
+     respawn_enemy();
+     respawn_interval = time(NULL);
+  }
 }
 
 
@@ -374,23 +380,6 @@ int position_valid(int x0,int y0,int x1,int y1)
 }
 
 
-int random_number(int min_num, int max_num)
-{
-   int result=0,low_num=0,hi_num=0;
-   if(min_num<max_num)
-   {
-       low_num=min_num;
-       hi_num=max_num+1; // this is done to include max_num in output.
-   }else{
-       low_num=max_num+1;// this is done to include max_num in output.
-        hi_num=min_num;
-   }
-   srand(time(NULL));
-   result = (rand()%(hi_num-low_num))+low_num;
-   return result;
-}
-
-
 /*****************************
 ** All printable content
 *****************************/
@@ -507,14 +496,12 @@ void init_level(int level)
    num_ion_cannons = MAX_ION_CANNON;
    num_black_holes = MAX_BLACK_HOLE;
 
-   switch(level)
+   // update level number
+   current_level = level;
+
+   switch(current_level)
    {
       case LEVEL_1:
-	    // add small asteroid to the world
-            for(i=0;i<1;i++) {
-                 spaceObj *small_asteroid = init_asteroid(SMALL);
-                 add_space_obj(small_asteroid);
-            }
       case LEVEL_2:
       case LEVEL_3:
       case LEVEL_4:
@@ -632,7 +619,7 @@ spaceObj* init_ion_cannon(int rel_x1,int rel_y1)
 spaceObj* init_asteroid(int size)
 {
    spaceObj *obj = (spaceObj *) malloc(sizeof(spaceObj));
-   int i,max_x,max_y;
+   int i,random_y,max_x,max_y;
    int asteroid_width = 0;
    int asteroid_height = 0;
 
@@ -658,11 +645,14 @@ spaceObj* init_asteroid(int size)
              break;
    }
 
+   /* put asteroid at random y position */
+   random_y = random_number(asteroid_height,max_y-asteroid_height); 
+
    /* hardcode values because they are totally dependent on the asteroid's image */
    obj->x0 = max_x - asteroid_width;
    obj->x1 = max_x;
-   obj->y0 = max_y-30 - asteroid_height/2;
-   obj->y1 = max_y-30 + asteroid_height/2;
+   obj->y0 = max_y-random_y - asteroid_height/2;
+   obj->y1 = max_y-random_y + asteroid_height/2;
 
    obj->type = ASTEROID;
    obj->color = BG_WHITE_TXT_BLACK;
@@ -720,10 +710,6 @@ void print_world()
       {
       	print_obj(obj);
       }
-      else if(obj->status == STATUS_DESTROYED)
-      {
-        respawn_obj(obj); 
-      }
    }
 }
 
@@ -767,10 +753,23 @@ void print_status_bar()
    print_text(len,0,str,BG_WHITE_TXT_BLACK,NONE,NONE,0);
 }
 
-void respawn_obj(spaceObj *obj)
+void respawn_enemy()
 {
-   int obj_status = obj->status;
-   obj->status = STATUS_ALIVE;
+   spaceObj *obj;
+
+   switch(current_level)
+   {
+      case LEVEL_1:
+            // add small asteroid to the world
+            obj = init_asteroid(SMALL);
+            add_space_obj(obj);
+            break;
+      case LEVEL_2:
+      case LEVEL_3:
+      case LEVEL_4:
+      case FINAL_BOSS:
+            break;
+   }
 }
 
 void print_obj(spaceObj *obj)
@@ -811,6 +810,27 @@ void summon_black_hole()
 
 
 /***************************
+***  Random
+***************************/
+
+int random_number(int min_num, int max_num)
+{
+   int result=0,low_num=0,hi_num=0;
+   if(min_num<max_num)
+   {
+       low_num=min_num;
+       hi_num=max_num+1; // this is done to include max_num in output.
+   }else{
+       low_num=max_num+1;// this is done to include max_num in output.
+        hi_num=min_num;
+   }
+   srand(time(NULL));
+   result = (rand()%(hi_num-low_num))+low_num;
+   return result;
+}
+
+
+/***************************
 ***  List utils                
 ***************************/
 
@@ -832,4 +852,32 @@ void add_space_obj(spaceObj *obj) {
 
 int get_number_space_objs() {
     return get_linked_list_size(gameObjs);
+}
+
+int get_number_enemies() {
+    int i,total_num_objs,total_num_enemies;
+    spaceObj *obj;
+
+    total_num_enemies = 0;
+    total_num_objs = get_number_space_objs();
+    for(i=0;i<total_num_objs;i++) 
+    {
+        obj = get_space_obj(i);
+	if(is_enemy(obj->type) == 0)
+             total_num_enemies++;
+    }
+ 
+     return total_num_enemies;
+}
+
+int is_enemy(int obj_type) {
+    int res = -1;
+
+    switch(obj_type)
+    {
+         case ALIEN_SPACESHIP: res=0; break;
+         case ASTEROID: res=0; break;
+    }
+   
+    return res;
 }

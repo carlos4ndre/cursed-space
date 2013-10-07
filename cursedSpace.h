@@ -39,6 +39,8 @@
 #define MAX_PHOTON_TORPEDOS 200
 #define MAX_ION_CANNON 50
 #define MAX_BLACK_HOLE 1
+#define MAX_NUM_ENEMIES 20
+#define RESPAWN_INTERVAL 2
 
 #define STATUS_ALIVE 0
 #define STATUS_DESTROYED 1
@@ -95,6 +97,9 @@ void init_space_obj_list();
 spaceObj* get_space_obj(int position);
 void add_space_obj(spaceObj *obj);
 int get_number_space_objs();
+int get_number_enemies();
+int is_enemy(int obj_type);
+void respawn_enemy();
 
 void init_level(int level);
 spaceObj* init_hero_spaceship();
