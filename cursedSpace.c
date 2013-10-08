@@ -76,11 +76,11 @@ void render()
    switch(game_status)
    {
       case GAME_ON_MAIN_MENU:
-            //print_main_menu();
-            //getchar();
- 	    //clear();
-            //print_howto_menu();
-            //getchar();
+            print_main_menu();
+            getchar();
+ 	    clear();
+            print_howto_menu();
+            getchar();
             game_status = GAME_RUNNING;
             break;
       case GAME_RUNNING:
@@ -215,12 +215,15 @@ void check_level_status()
 
 void process_world_events()
 {
+   spaceObj *obj;
    int i,total_num_objs,total_num_enemies;
+
    total_num_objs = get_number_space_objs();
 
+   // Move objects
    for(i=0;i<total_num_objs;i++)
    {
-	spaceObj *obj = get_space_obj(i);
+	obj = get_space_obj(i);
 
 	switch(obj->type)
 	{
@@ -245,7 +248,7 @@ void process_world_events()
 	}
    }
 
-
+  // Respawn enemies
   time_t now = time(NULL);
   int elapsed_time = now - respawn_interval;
   total_num_enemies = get_number_enemies();
@@ -255,6 +258,11 @@ void process_world_events()
      respawn_enemy();
      respawn_interval = time(NULL);
   }
+
+  // Check for collisions (using super lol algorithm)
+
+  // Clean all dead objects with some sort of space garbage collector
+  run_space_garbage_collector();
 }
 
 
@@ -846,8 +854,15 @@ void add_space_obj(spaceObj *obj) {
 
     struct node *node = (struct node*) malloc(sizeof(struct node));
     node->data = obj;
+    node->next = NULL;
+    node->previous = NULL;
 
     add_node_end(node,gameObjs);
+}
+
+void remove_space_obj(int position) {
+
+    remove_node(gameObjs,position);
 }
 
 int get_number_space_objs() {
@@ -868,6 +883,25 @@ int get_number_enemies() {
     }
  
      return total_num_enemies;
+}
+
+void run_space_garbage_collector() {
+    int i,total_num_objs;
+    spaceObj *obj;
+
+    char str[30];
+
+    total_num_objs = get_number_space_objs();
+    for(i=0;i<total_num_objs;i++)
+    {
+        obj = get_space_obj(i);
+
+        if(obj->status == STATUS_DESTROYED) {
+             remove_space_obj(i);
+             total_num_objs--;
+             i--;
+        }
+    }
 }
 
 int is_enemy(int obj_type) {

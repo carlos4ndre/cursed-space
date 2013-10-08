@@ -90,6 +90,9 @@ int remove_node(struct linked_list *list,int position)
        if(tmp->previous != NULL)
            tmp->previous->next = tmp->next;
 
+       if(tmp->next != NULL)
+           tmp->next->previous = tmp->previous;
+ 
        free(tmp);
    }
 

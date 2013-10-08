@@ -96,10 +96,12 @@ void print_obj(spaceObj *obj);
 void init_space_obj_list();
 spaceObj* get_space_obj(int position);
 void add_space_obj(spaceObj *obj);
+void remove_space_obj(int position);
 int get_number_space_objs();
 int get_number_enemies();
 int is_enemy(int obj_type);
 void respawn_enemy();
+void run_space_garbage_collector();
 
 void init_level(int level);
 spaceObj* init_hero_spaceship();
