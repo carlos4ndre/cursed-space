@@ -76,11 +76,13 @@ void render()
    switch(game_status)
    {
       case GAME_ON_MAIN_MENU:
+            /*
             print_main_menu();
             getchar();
  	    clear();
             print_howto_menu();
             getchar();
+	    */
             game_status = GAME_RUNNING;
             break;
       case GAME_RUNNING:
@@ -259,7 +261,8 @@ void process_world_events()
      respawn_interval = time(NULL);
   }
 
-  // Check for collisions (using super lol algorithm)
+  // Check for collisions
+  analyse_collisions();
 
   // Clean all dead objects with some sort of space garbage collector
   run_space_garbage_collector();
@@ -800,6 +803,9 @@ void summon_black_hole()
    int x_center,y_center;
    int x,y;
 
+   int i,total_num_objs;
+   spaceObj *obj;
+
    getmaxyx(stdscr,max_y,max_x);
 
    x_center = max_x/2;
@@ -813,6 +819,16 @@ void summon_black_hole()
           print_text(x_center-x,y_center+y,"*",BG_BLACK_TXT_BLACK,NONE,NONE,0);
           print_text(x_center-x,y_center-y,"*",BG_BLACK_TXT_BLACK,NONE,NONE,1);
       }
+    }
+
+    total_num_objs = get_number_space_objs();
+    for(i=1;i<total_num_objs;i++)
+    {
+        obj = get_space_obj(i);
+        if(is_enemy(obj->type) == 0)
+             kills++;
+
+        obj->status = STATUS_DESTROYED;
     }
 }
 
@@ -885,11 +901,61 @@ int get_number_enemies() {
      return total_num_enemies;
 }
 
+/* Using O(n^2) algorithm, although better aproaches like using sorted trees/arrays with distance as index might be interesting.*/
+void analyse_collisions() {
+    int i,j,total_num_objs;
+    int x0,x1,y0,y1;
+    int _x0,_x1,_y0,_y1;
+    spaceObj *obj,*tmp;
+
+    total_num_objs = get_number_space_objs();
+
+    for(i=0;i<total_num_objs;i++)
+    {
+        obj = get_space_obj(i);
+        x0 = obj->x0;
+        x1 = obj->x1;
+        y0 = obj->y0;
+        y1 = obj->y1;
+
+        for(j=0;j<total_num_objs;j++)
+        {
+                if(i == j) continue;
+
+        	tmp = get_space_obj(j);
+                _x0 = tmp->x0;
+                _x1 = tmp->x1;
+		_y0 = tmp->y0;
+		_y1 = tmp->y1;
+
+		if((x0>= _x0 && x0 <= _x1) || (x1>=_x0 && x1 <= _x1)) { // possible collision since they intercept at X
+                    if((y0>= _y0 && y0 <= _y1) || (y1>= _y0 && y1 <= _y1)) { // collision?
+
+                       if(obj->type == ASTEROID && tmp->type == PHOTON_TORPEDO) 
+		       {
+				obj->status = STATUS_DESTROYED;
+                                tmp->status = STATUS_DESTROYED;
+				kills++;
+		       }
+		       else if(obj->type == ASTEROID && tmp->type == ION_CANNON)
+                       {
+                                obj->status = STATUS_DESTROYED;
+				kills++;
+                       }
+                       else if(obj->type == ASTEROID && tmp->type == HERO_SPACESHIP)
+                       {
+                                obj->status = STATUS_DESTROYED;
+				kills++;
+                       }
+		    }
+		}
+        }
+    }
+}
+
 void run_space_garbage_collector() {
     int i,total_num_objs;
     spaceObj *obj;
-
-    char str[30];
 
     total_num_objs = get_number_space_objs();
     for(i=0;i<total_num_objs;i++)

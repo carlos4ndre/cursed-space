@@ -102,6 +102,7 @@ int get_number_enemies();
 int is_enemy(int obj_type);
 void respawn_enemy();
 void run_space_garbage_collector();
+void analyse_collisions();
 
 void init_level(int level);
 spaceObj* init_hero_spaceship();

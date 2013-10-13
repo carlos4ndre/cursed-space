@@ -87,12 +87,15 @@ int remove_node(struct linked_list *list,int position)
        if(tmp == list->head)
            list->head = tmp->next;
 
+       if(tmp == list->tail)
+           list->tail = tmp->previous;
+
        if(tmp->previous != NULL)
            tmp->previous->next = tmp->next;
 
        if(tmp->next != NULL)
            tmp->next->previous = tmp->previous;
- 
+
        free(tmp);
    }
 
