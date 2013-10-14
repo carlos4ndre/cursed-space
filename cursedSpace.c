@@ -56,6 +56,7 @@ void initialize()
    init_pair(BG_WHITE_TXT_BLACK,COLOR_BLACK,COLOR_WHITE);
    init_pair(BG_WHITE_TXT_BLUE,COLOR_BLUE,COLOR_WHITE);
    init_pair(BG_WHITE_TXT_GREEN,COLOR_GREEN,COLOR_WHITE);
+   init_pair(BG_WHITE_TXT_YELLOW,COLOR_YELLOW,COLOR_WHITE);
    init_pair(BG_WHITE_TXT_RED,COLOR_RED,COLOR_WHITE);
    init_pair(BG_BLACK_TXT_BLACK,COLOR_BLACK,COLOR_BLACK);
    init_pair(BG_BLUE_TXT_WHITE,COLOR_WHITE,COLOR_BLUE);
@@ -235,7 +236,13 @@ void process_world_events()
             case ALIEN_SPACESHIP:
                 // do something
                 break;
-            case ASTEROID:
+            case SMALL_ASTEROID:
+                move_obj(LEFT,obj);
+                break;
+            case MEDIUM_ASTEROID:
+                move_obj(LEFT,obj);
+                break;
+            case BIG_ASTEROID:
                 move_obj(LEFT,obj);
                 break;
             case PHOTON_TORPEDO:
@@ -494,6 +501,28 @@ void print_howto_menu()
    print_text(x,y+22,"Press any key to start",BG_WHITE_TXT_BLACK,A_BOLD,ALIGN_CENTER,start_display_speed);
 }
 
+
+void print_youdied_menu()
+{
+   int logo_display_speed = 1;
+   int history_display_speed = 50;
+   int start_display_speed = 1;
+   int x,y;
+
+   getmaxyx(stdscr,y,x);
+   y /= 4;
+
+   print_text(x,y,"          _______             ______  _________ _______  ______   _ ",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,y+1,"|\\     /|(  ___  )|\\     /|  (  __  \\ \\__   __/(  ____ \\(  __  \\ ( )",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,y+2,"( \\   / )| (   ) || )   ( |  | (  \\  )   ) (   | (    \\/| (  \\  )| |",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,y+3," \\ (_) / | |   | || |   | |  | |   ) |   | |   | (__    | |   ) || |",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,y+4,"  \\   /  | |   | || |   | |  | |   | |   | |   |  __)   | |   | || |",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,y+5,"   ) (   | |   | || |   | |  | |   ) |   | |   | (      | |   ) |(_)",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,y+6,"   | |   | (___) || (___) |  | (__/  )___) (___| (____/\\| (__/  ) _ ",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+   print_text(x,y+7,"   \\_/   (_______)(_______)  (______/ \\_______/(_______/(______/ (_)",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+}
+
+
 void init_level(int level)
 {
    int i, num_objs;
@@ -543,7 +572,7 @@ spaceObj* init_hero_spaceship()
    obj->type = HERO_SPACESHIP;
    obj->status = STATUS_ALIVE;
    obj->color = BG_WHITE_TXT_BLACK;
-   obj->shield = SHIELD_HERO;
+   obj->shield = SHIELD_HERO_SPACESHIP;
 
    char **image = malloc(spaceship_height*sizeof(char*));
    for(i = 0; i < spaceship_height; i++)
@@ -642,17 +671,20 @@ spaceObj* init_asteroid(int size)
 	case SMALL:
 	     asteroid_height = 4;
 	     asteroid_width = 4;
-             obj->shield = SHIELD_SMALL_ASTROID;
+             obj->shield = SHIELD_SMALL_ASTEROID;
+   	     obj->type = SMALL_ASTEROID;
              break;
         case MEDIUM:
              asteroid_height = 6;
              asteroid_width = 8;
-             obj->shield = SHIELD_MEDIUM_ASTROID;
+             obj->shield = SHIELD_MEDIUM_ASTEROID;
+             obj->type = MEDIUM_ASTEROID;
              break;
         case BIG:
              asteroid_height = 10;
              asteroid_width = 18;
-             obj->shield = SHIELD_BIG_ASTROID;
+             obj->shield = SHIELD_BIG_ASTEROID;
+             obj->type = BIG_ASTEROID;
              break;
    }
 
@@ -665,7 +697,6 @@ spaceObj* init_asteroid(int size)
    obj->y0 = max_y-random_y - asteroid_height/2;
    obj->y1 = max_y-random_y + asteroid_height/2;
 
-   obj->type = ASTEROID;
    obj->color = BG_WHITE_TXT_BLACK;
 
    char **image = malloc(asteroid_height*sizeof(char*));
@@ -903,7 +934,7 @@ int get_number_enemies() {
 
 /* Using O(n^2) algorithm, although better aproaches like using sorted trees/arrays with distance as index might be interesting.*/
 void analyse_collisions() {
-    int i,j,total_num_objs;
+    int i,j,total_num_objs,res;
     int x0,x1,y0,y1;
     int _x0,_x1,_y0,_y1;
     spaceObj *obj,*tmp;
@@ -928,27 +959,35 @@ void analyse_collisions() {
 		_y0 = tmp->y0;
 		_y1 = tmp->y1;
 
-		if((x0>= _x0 && x0 <= _x1) || (x1>=_x0 && x1 <= _x1)) { // possible collision since they intercept at X
-                    if((y0>= _y0 && y0 <= _y1) || (y1>= _y0 && y1 <= _y1)) { // collision?
+		if(!(_y1<y0 || _x0>x1 || _x1<x0 || _y0>y1)) { // collision?
 
-                       if(obj->type == ASTEROID && tmp->type == PHOTON_TORPEDO) 
-		       {
-				obj->status = STATUS_DESTROYED;
-                                tmp->status = STATUS_DESTROYED;
-				kills++;
+                       res = is_enemy(obj->type);
+
+                       if(res == 0 && tmp->type == PHOTON_TORPEDO) 
+      		       {
+				take_damage(obj,DAMAGE_PHOTON_TORPEDO);
+				tmp->status = STATUS_DESTROYED;
 		       }
-		       else if(obj->type == ASTEROID && tmp->type == ION_CANNON)
-                       {
-                                obj->status = STATUS_DESTROYED;
-				kills++;
-                       }
-                       else if(obj->type == ASTEROID && tmp->type == HERO_SPACESHIP)
-                       {
-                                obj->status = STATUS_DESTROYED;
-				kills++;
-                       }
-		    }
-		}
+		       else if(res == 0 && tmp->type == ION_CANNON) 
+		       {	
+				take_damage(obj,DAMAGE_ION_CANNON);
+		       }
+                       else if(obj->type == HERO_SPACESHIP && tmp->type == SMALL_ASTEROID) 
+		       {	
+				take_damage(obj,DAMAGE_SMALL_ASTEROID);
+                                take_damage(tmp,DAMAGE_COLLISION_HERO_SPACESHIP);
+		       }
+                       else if(obj->type == HERO_SPACESHIP && tmp->type == MEDIUM_ASTEROID) 
+		       {
+				take_damage(obj,DAMAGE_MEDIUM_ASTEROID);
+                                take_damage(tmp,DAMAGE_COLLISION_HERO_SPACESHIP);
+		       }
+                       else if(obj->type == HERO_SPACESHIP && tmp->type == BIG_ASTEROID) 
+		       {
+				take_damage(obj,DAMAGE_BIG_ASTEROID);
+                                take_damage(tmp,DAMAGE_COLLISION_HERO_SPACESHIP);
+	               }
+	    }
         }
     }
 }
@@ -976,8 +1015,54 @@ int is_enemy(int obj_type) {
     switch(obj_type)
     {
          case ALIEN_SPACESHIP: res=0; break;
-         case ASTEROID: res=0; break;
+         case SMALL_ASTEROID: res=0; break;
+	 case MEDIUM_ASTEROID: res=0; break;
+	 case BIG_ASTEROID: res=0; break;
     }
    
     return res;
+}
+
+void take_damage(spaceObj *obj,int damage)
+{
+    int max_shield;
+    double shield_percentage;
+
+    obj->shield -= damage;
+
+    if(obj->shield < 0) {
+          obj->status = STATUS_DESTROYED;
+          if(is_enemy(obj->type) == 0)
+		kills++;
+
+          if(obj->type == HERO_SPACESHIP) {
+	      print_youdied_menu();
+              refresh();
+              exit(1);
+          }
+	  return;
+    }
+
+    max_shield = get_max_shield(obj->type);
+    shield_percentage = ((double)obj->shield/max_shield)*100;
+    
+    if(shield_percentage > 60)  obj->color = BG_WHITE_TXT_BLACK;
+    else if(shield_percentage > 40) obj->color = BG_WHITE_TXT_YELLOW;
+    else obj->color = BG_WHITE_TXT_RED;
+}
+
+int get_max_shield(int obj_type)
+{
+    int value;
+
+    switch(obj_type)
+    {
+        case HERO_SPACESHIP: value = SHIELD_HERO_SPACESHIP; break;
+	case ALIEN_SPACESHIP: value = SHIELD_ALIEN_SPACESHIP; break;
+	case SMALL_ASTEROID: value = SHIELD_SMALL_ASTEROID; break;
+	case MEDIUM_ASTEROID: value = SHIELD_MEDIUM_ASTEROID; break;
+	case BIG_ASTEROID: value = SHIELD_BIG_ASTEROID; break;
+    }
+
+    return value;
 }
