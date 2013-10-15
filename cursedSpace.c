@@ -77,13 +77,11 @@ void render()
    switch(game_status)
    {
       case GAME_ON_MAIN_MENU:
-            /*
             print_main_menu();
             getchar();
  	    clear();
             print_howto_menu();
             getchar();
-	    */
             game_status = GAME_RUNNING;
             break;
       case GAME_RUNNING:
@@ -856,8 +854,10 @@ void summon_black_hole()
     for(i=1;i<total_num_objs;i++)
     {
         obj = get_space_obj(i);
-        if(is_enemy(obj->type) == 0)
+        if(is_enemy(obj->type) == 0) {
              kills++;
+	     update_score(obj->type);
+	}
 
         obj->status = STATUS_DESTROYED;
     }
@@ -1032,8 +1032,10 @@ void take_damage(spaceObj *obj,int damage)
 
     if(obj->shield < 0) {
           obj->status = STATUS_DESTROYED;
-          if(is_enemy(obj->type) == 0)
+          if(is_enemy(obj->type) == 0) {
 		kills++;
+		update_score(obj->type);
+	  }
 
           if(obj->type == HERO_SPACESHIP) {
 	      print_youdied_menu();
@@ -1049,6 +1051,18 @@ void take_damage(spaceObj *obj,int damage)
     if(shield_percentage > 60)  obj->color = BG_WHITE_TXT_BLACK;
     else if(shield_percentage > 40) obj->color = BG_WHITE_TXT_YELLOW;
     else obj->color = BG_WHITE_TXT_RED;
+}
+
+void update_score(int obj_type)
+{
+    switch(obj_type)
+    {
+        case ALIEN_SPACESHIP: score += SCORE_ALIEN_SPACESHIP; break;
+        case SMALL_ASTEROID: score += SCORE_SMALL_ASTEROID; break;
+        case MEDIUM_ASTEROID: score += SCORE_MEDIUM_ASTEROID; break;
+        case BIG_ASTEROID: score += SCORE_BIG_ASTEROID; break;
+        case FINAL_BOSS: score += SCORE_BOSS; break;
+    }
 }
 
 int get_max_shield(int obj_type)

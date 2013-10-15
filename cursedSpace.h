@@ -38,6 +38,12 @@
 #define SHIELD_ALIEN_SPACESHIP 40
 #define SHIELD_BOSS 500
 
+#define SCORE_SMALL_ASTEROID 10
+#define SCORE_MEDIUM_ASTEROID 20
+#define SCORE_BIG_ASTEROID 30
+#define SCORE_ALIEN_SPACESHIP 40
+#define SCORE_BOSS 100
+
 #define DAMAGE_PHOTON_TORPEDO 5
 #define DAMAGE_ION_CANNON 10
 #define DAMAGE_SMALL_ASTEROID 10
@@ -116,6 +122,7 @@ void run_space_garbage_collector();
 void analyse_collisions();
 int get_max_shield(int obj_type);
 void take_damage(spaceObj *obj,int damage);
+void update_score(int obj_type);
 
 void init_level(int level);
 spaceObj* init_hero_spaceship();
