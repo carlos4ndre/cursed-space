@@ -77,11 +77,13 @@ void render()
    switch(game_status)
    {
       case GAME_ON_MAIN_MENU:
+/*
             print_main_menu();
             getchar();
  	    clear();
             print_howto_menu();
             getchar();
+*/
             game_status = GAME_RUNNING;
             break;
       case GAME_RUNNING:
@@ -524,10 +526,7 @@ void print_youdied_menu()
 void init_level(int level)
 {
    int i, num_objs;
-
-   // add hero spaceship to the world 
-   spaceObj *hero_spaceship = init_hero_spaceship();
-   add_space_obj(hero_spaceship);
+   spaceObj *obj;
 
    // reset weapons' ammo
    num_photon_torpedos = MAX_PHOTON_TORPEDOS;
@@ -537,9 +536,14 @@ void init_level(int level)
    // update level number
    current_level = level;
 
+   // special actions for this particular level
    switch(current_level)
    {
       case LEVEL_1:
+   	    // add hero spaceship to the world 
+   	    obj = init_hero_spaceship();
+            add_space_obj(obj);
+            break;
       case LEVEL_2:
       case LEVEL_3:
       case LEVEL_4:
@@ -796,20 +800,36 @@ void print_status_bar()
 void respawn_enemy()
 {
    spaceObj *obj;
+   int r_num,obj_type;
 
    switch(current_level)
    {
       case LEVEL_1:
-            // add small asteroid to the world
-            obj = init_asteroid(SMALL);
-            add_space_obj(obj);
+            obj_type = SMALL_ASTEROID;
             break;
       case LEVEL_2:
+            r_num = random_number(1,2);
+            if(r_num == 1) obj_type = SMALL_ASTEROID;
+            else obj_type = MEDIUM_ASTEROID;
+            break;
       case LEVEL_3:
+            r_num = random_number(1,3);
+            if(r_num == 1) obj_type = SMALL_ASTEROID;
+            if(r_num == 2) obj_type = MEDIUM_ASTEROID;
+            else obj_type = BIG_ASTEROID;
+            break;
       case LEVEL_4:
       case FINAL_BOSS:
             break;
    }
+
+   if(obj_type == SMALL_ASTEROID) obj = init_asteroid(SMALL);
+   else if(obj_type == MEDIUM_ASTEROID) obj = init_asteroid(MEDIUM);
+   else if(obj_type == BIG_ASTEROID) obj = init_asteroid(BIG);
+   else obj = init_asteroid(SMALL);
+
+   // add object to the world
+   add_space_obj(obj);
 }
 
 void print_obj(spaceObj *obj)
