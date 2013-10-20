@@ -245,6 +245,9 @@ void process_world_events()
             case BIG_ASTEROID:
                 move_obj(LEFT,obj);
                 break;
+            case HUGE_ASTEROID:
+                move_obj(LEFT,obj);
+                break;
             case PHOTON_TORPEDO:
                 move_obj(RIGHT,obj);
                 break;
@@ -688,6 +691,12 @@ spaceObj* init_asteroid(int size)
              obj->shield = SHIELD_BIG_ASTEROID;
              obj->type = BIG_ASTEROID;
              break;
+	case HUGE:
+             asteroid_height = 16;
+             asteroid_width = 30;
+             obj->shield = SHIELD_HUGE_ASTEROID;
+             obj->type = HUGE_ASTEROID;
+             break;
    }
 
    /* put asteroid at random y position */
@@ -732,6 +741,24 @@ spaceObj* init_asteroid(int size)
             strcpy(image[7]," \\              / ");
             strcpy(image[8],"  '.          .'  ");
             strcpy(image[9],"    '-.____.-'    ");
+            break;
+	case HUGE:
+	    strcpy(image[0],"         ___----___         ");
+            strcpy(image[1],"      .--          --.      ");
+	    strcpy(image[2],"    ./                \\.    ");
+	    strcpy(image[3],"   /                    \\   ");
+	    strcpy(image[4],"  /                      \\  ");
+	    strcpy(image[5]," |                        | ");
+	    strcpy(image[6],"|                          |");
+	    strcpy(image[7],"|                          |");
+	    strcpy(image[8],"|                          |");
+	    strcpy(image[9],"|                          |");
+	    strcpy(image[10]," |                        | ");
+	    strcpy(image[11],"  \\                      /  ");
+	    strcpy(image[12],"   \\                    /   ");
+	    strcpy(image[13],"    `\\                /'    ");
+	    strcpy(image[14],"      '--___    ___--'      ");
+	    strcpy(image[15],"            ----            ");
             break;
    }
 
@@ -805,18 +832,22 @@ void respawn_enemy()
    switch(current_level)
    {
       case LEVEL_1:
-            obj_type = SMALL_ASTEROID;
-            break;
-      case LEVEL_2:
             r_num = random_number(1,2);
             if(r_num == 1) obj_type = SMALL_ASTEROID;
             else obj_type = MEDIUM_ASTEROID;
             break;
-      case LEVEL_3:
+      case LEVEL_2:
             r_num = random_number(1,3);
             if(r_num == 1) obj_type = SMALL_ASTEROID;
-            if(r_num == 2) obj_type = MEDIUM_ASTEROID;
+            else if(r_num == 2) obj_type = MEDIUM_ASTEROID;
             else obj_type = BIG_ASTEROID;
+            break;
+      case LEVEL_3:
+            r_num = random_number(1,4);
+            if(r_num == 1) obj_type = SMALL_ASTEROID;
+            else if(r_num == 2) obj_type = MEDIUM_ASTEROID;
+            else if(r_num == 3) obj_type = BIG_ASTEROID;
+            else obj_type = HUGE_ASTEROID;
             break;
       case LEVEL_4:
       case FINAL_BOSS:
@@ -826,6 +857,7 @@ void respawn_enemy()
    if(obj_type == SMALL_ASTEROID) obj = init_asteroid(SMALL);
    else if(obj_type == MEDIUM_ASTEROID) obj = init_asteroid(MEDIUM);
    else if(obj_type == BIG_ASTEROID) obj = init_asteroid(BIG);
+   else if(obj_type == HUGE_ASTEROID) obj = init_asteroid(HUGE);
    else obj = init_asteroid(SMALL);
 
    // add object to the world
@@ -1007,6 +1039,11 @@ void analyse_collisions() {
 				take_damage(obj,DAMAGE_BIG_ASTEROID);
                                 take_damage(tmp,DAMAGE_COLLISION_HERO_SPACESHIP);
 	               }
+                       else if(obj->type == HERO_SPACESHIP && tmp->type == HUGE_ASTEROID)
+                       {
+                                take_damage(obj,DAMAGE_HUGE_ASTEROID);
+                                take_damage(tmp,DAMAGE_COLLISION_HERO_SPACESHIP);
+                       }
 	    }
         }
     }
@@ -1038,6 +1075,7 @@ int is_enemy(int obj_type) {
          case SMALL_ASTEROID: res=0; break;
 	 case MEDIUM_ASTEROID: res=0; break;
 	 case BIG_ASTEROID: res=0; break;
+         case HUGE_ASTEROID: res=0; break;
     }
    
     return res;
