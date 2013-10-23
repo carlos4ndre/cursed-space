@@ -876,24 +876,19 @@ void respawn_enemy()
             break;
       case LEVEL_2:
             r_num = random_number(1,3);
-            if(r_num == 1) obj_type = SMALL_ASTEROID;
+            if(r_num == 1) obj_type = ALIEN_SPACESHIP;
             else if(r_num == 2) obj_type = MEDIUM_ASTEROID;
             else obj_type = BIG_ASTEROID;
             break;
       case LEVEL_3:
             r_num = random_number(1,4);
-            if(r_num == 1) obj_type = SMALL_ASTEROID;
+            if(r_num == 1) obj_type = ALIEN_SPACESHIP;
             else if(r_num == 2) obj_type = MEDIUM_ASTEROID;
             else if(r_num == 3) obj_type = BIG_ASTEROID;
             else obj_type = HUGE_ASTEROID;
             break;
       case LEVEL_4:
-            r_num = random_number(1,5);
-            if(r_num == 1) obj_type = SMALL_ASTEROID;
-            else if(r_num == 2) obj_type = MEDIUM_ASTEROID;
-            else if(r_num == 3) obj_type = BIG_ASTEROID;
-            else if(r_num == 4) obj_type = HUGE_ASTEROID;
-	    else obj_type = ALIEN_SPACESHIP;
+	    obj_type = ALIEN_SPACESHIP;
             break;
       case FINAL_BOSS:
             break;
