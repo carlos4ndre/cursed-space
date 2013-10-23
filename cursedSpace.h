@@ -8,7 +8,7 @@
 #define GAME_PAUSED 2
 #define GAME_FINISHED 3
 
-#define LEVEL_TIMER 60
+#define LEVEL_TIMER 45
 #define LEVEL_1 1
 #define LEVEL_2 2
 #define LEVEL_3 3
@@ -38,15 +38,15 @@
 #define SHIELD_MEDIUM_ASTEROID 20
 #define SHIELD_BIG_ASTEROID 30
 #define SHIELD_HUGE_ASTEROID 40
-#define SHIELD_ALIEN_SPACESHIP 20
+#define SHIELD_ALIEN_SPACESHIP 30
 #define SHIELD_BOSS 500
 
 #define SCORE_SMALL_ASTEROID 10
 #define SCORE_MEDIUM_ASTEROID 20
 #define SCORE_BIG_ASTEROID 30
 #define SCORE_HUGE_ASTEROID 50
-#define SCORE_ALIEN_SPACESHIP 40
-#define SCORE_BOSS 100
+#define SCORE_ALIEN_SPACESHIP 100
+#define SCORE_BOSS 1000
 
 #define DAMAGE_PHOTON_TORPEDO 5
 #define DAMAGE_ION_CANNON 10
@@ -54,10 +54,11 @@
 #define DAMAGE_MEDIUM_ASTEROID 20
 #define DAMAGE_BIG_ASTEROID 30
 #define DAMAGE_HUGE_ASTEROID 40
+#define DAMAGE_ALIEN_SPACESHIP 20
 #define DAMAGE_COLLISION_HERO_SPACESHIP 50
 
 #define MAX_PHOTON_TORPEDOS 300
-#define MAX_ION_CANNON 10
+#define MAX_ION_CANNON 5
 #define MAX_BLACK_HOLE 1
 #define MAX_NUM_ENEMIES 20
 #define RESPAWN_INTERVAL 0.5
@@ -132,6 +133,7 @@ void update_score(int obj_type);
 void init_level(int level);
 spaceObj* init_hero_spaceship();
 spaceObj* init_asteroid(int size);
+spaceObj* init_alien_spaceship();
 spaceObj* init_photon_torpedo(int rel_x1,int rel_y1);
 spaceObj* init_ion_cannon(int rel_x1,int rel_y1);
 void respawn_obj(spaceObj *obj);

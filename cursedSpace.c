@@ -19,7 +19,7 @@ int game_status = GAME_ON_MAIN_MENU;
 struct linked_list *gameObjs;
 
 /*****************************
-** Where the universe starts
+** Where the universe begins
 ******************************/
 
 int main(void)
@@ -77,11 +77,13 @@ void render()
    switch(game_status)
    {
       case GAME_ON_MAIN_MENU:
+/*
             print_main_menu();
             getchar();
  	    clear();
             print_howto_menu();
             getchar();
+*/
             game_status = GAME_RUNNING;
             break;
       case GAME_RUNNING:
@@ -232,7 +234,7 @@ void process_world_events()
                 // multiplayer? :) 
 		break;
             case ALIEN_SPACESHIP:
-                // do something
+		move_obj(LEFT,obj); // blind alien spaceship
                 break;
             case SMALL_ASTEROID:
                 move_obj(LEFT,obj);
@@ -765,6 +767,46 @@ spaceObj* init_asteroid(int size)
    return obj;
 }
 
+spaceObj* init_alien_spaceship()
+{
+   spaceObj *obj = (spaceObj *) malloc(sizeof(spaceObj));
+   int i,random_y,max_x,max_y;
+   int spaceship_width = 16;
+   int spaceship_height = 6;
+
+   getmaxyx(stdscr,max_y,max_x);       /* get screen width */
+   max_x--;
+
+   /* put asteroid at random y position */
+   random_y = random_number(spaceship_height,max_y-spaceship_height);
+
+   /* hardcode values because they are totally dependent on the asteroid's image */
+   obj->x0 = max_x - spaceship_width;
+   obj->x1 = max_x;
+   obj->y0 = max_y-random_y - spaceship_height/2;
+   obj->y1 = max_y-random_y + spaceship_height/2;
+
+   obj->type = ALIEN_SPACESHIP;
+   obj->status = STATUS_ALIVE;
+   obj->color = BG_WHITE_TXT_BLACK;
+   obj->shield = SHIELD_ALIEN_SPACESHIP;
+
+   char **image = malloc(spaceship_height*sizeof(char*));
+   for(i = 0; i < spaceship_height; i++)
+        image[i] = malloc( spaceship_width*sizeof(char));
+
+   strcpy(image[0],"    \\      /    ");
+   strcpy(image[1],"   __\\____/__   ");
+   strcpy(image[2],"  /          \\  ");
+   strcpy(image[3]," /  UFO FTW   \\ ");
+   strcpy(image[4],"/--------------\\");
+   strcpy(image[5],"================");
+
+   obj->image = image;
+
+   return obj;
+}
+
 
 void print_world()
 {
@@ -848,6 +890,13 @@ void respawn_enemy()
             else obj_type = HUGE_ASTEROID;
             break;
       case LEVEL_4:
+            r_num = random_number(1,5);
+            if(r_num == 1) obj_type = SMALL_ASTEROID;
+            else if(r_num == 2) obj_type = MEDIUM_ASTEROID;
+            else if(r_num == 3) obj_type = BIG_ASTEROID;
+            else if(r_num == 4) obj_type = HUGE_ASTEROID;
+	    else obj_type = ALIEN_SPACESHIP;
+            break;
       case FINAL_BOSS:
             break;
    }
@@ -856,6 +905,7 @@ void respawn_enemy()
    else if(obj_type == MEDIUM_ASTEROID) obj = init_asteroid(MEDIUM);
    else if(obj_type == BIG_ASTEROID) obj = init_asteroid(BIG);
    else if(obj_type == HUGE_ASTEROID) obj = init_asteroid(HUGE);
+   else if(obj_type == ALIEN_SPACESHIP) obj = init_alien_spaceship();
    else obj = init_asteroid(SMALL);
 
    // add object to the world
@@ -1040,6 +1090,11 @@ void analyse_collisions() {
                        else if(obj->type == HERO_SPACESHIP && tmp->type == HUGE_ASTEROID)
                        {
                                 take_damage(obj,DAMAGE_HUGE_ASTEROID);
+                                take_damage(tmp,DAMAGE_COLLISION_HERO_SPACESHIP);
+                       }
+                       else if(obj->type == HERO_SPACESHIP && tmp->type == ALIEN_SPACESHIP)
+                       {
+                                take_damage(obj,DAMAGE_ALIEN_SPACESHIP);
                                 take_damage(tmp,DAMAGE_COLLISION_HERO_SPACESHIP);
                        }
 	    }
