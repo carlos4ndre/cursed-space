@@ -834,31 +834,31 @@ void print_status_bar()
    elapsed_time = now - level_timer;
    time_left = LEVEL_TIMER - elapsed_time;
 
-   sprintf(str, "Shield: %d%",obj->shield);
+   sprintf(str, "Shield: %d",obj->shield);
    print_text(len,0,str,BG_WHITE_TXT_BLACK,NONE,NONE,0);
    len += strlen(str) + margin;
 
-   sprintf(str, "Photon Torpedo: %d%",num_photon_torpedos);
+   sprintf(str, "Photon Torpedo: %d",num_photon_torpedos);
    print_text(len,0,str,BG_WHITE_TXT_BLACK,NONE,NONE,0);
    len += strlen(str) + margin;
 
-   sprintf(str, "Ion Cannon: %d%",num_ion_cannons);
+   sprintf(str, "Ion Cannon: %d",num_ion_cannons);
    print_text(len,0,str,BG_WHITE_TXT_BLACK,NONE,NONE,0);
    len += strlen(str) + margin;
 
-   sprintf(str, "Black Hole: %d%",num_black_holes);
+   sprintf(str, "Black Hole: %d",num_black_holes);
    print_text(len,0,str,BG_WHITE_TXT_BLACK,NONE,NONE,0);
    len += strlen(str) + margin;
 
-   sprintf(str, "Time: %d%",time_left);
+   sprintf(str, "Time: %d",time_left);
    print_text(len,0,str,BG_WHITE_TXT_BLACK,NONE,NONE,0);
    len += strlen(str) + margin;
 
-   sprintf(str, "Enemies Killed: %d%",kills);
+   sprintf(str, "Enemies Killed: %d",kills);
    print_text(len,0,str,BG_WHITE_TXT_BLACK,NONE,NONE,0);
    len += strlen(str) + margin;
 
-   sprintf(str, "Score: %d%",score);
+   sprintf(str, "Score: %d",score);
    print_text(len,0,str,BG_WHITE_TXT_BLACK,NONE,NONE,0);
 }
 
