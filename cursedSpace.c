@@ -77,11 +77,13 @@ void render()
    switch(game_status)
    {
       case GAME_ON_MAIN_MENU:
+/*
             print_main_menu();
             getchar();
  	    clear();
             print_howto_menu();
             getchar();
+*/
             game_status = GAME_RUNNING;
             break;
       case GAME_RUNNING:
@@ -672,8 +674,8 @@ spaceObj* init_asteroid(int size)
    switch(size)
    {
 	case SMALL:
-	     asteroid_height = 4;
-	     asteroid_width = 4;
+	     asteroid_height = 4; 
+	     asteroid_width = 6;
              obj->shield = SHIELD_SMALL_ASTEROID;
    	     obj->type = SMALL_ASTEROID;
              break;
@@ -715,19 +717,19 @@ spaceObj* init_asteroid(int size)
    switch(size)
    {
         case SMALL:
-            strcpy(image[0]," __ ");
-            strcpy(image[1],"/  \\");
-            strcpy(image[2],"\\__/");
-	    strcpy(image[3],"    ");
+            strcpy(image[0]," ____ ");
+            strcpy(image[1],"/    \\");
+	    strcpy(image[2],"|    |");
+	    strcpy(image[3],"\\____/");
             break;
         case MEDIUM:
-	    strcpy(image[0]," .-;;-. ");
-	    strcpy(image[1],"/      \\");
+            strcpy(image[0]," .-;;-. ");
+            strcpy(image[1],"/      \\");
             strcpy(image[2],"|      |");
-	    strcpy(image[3],"\\      /");
-	    strcpy(image[4]," '-..-' ");
- 	    strcpy(image[5],"        ");
-            break;
+            strcpy(image[3],"\\      /");
+            strcpy(image[4]," '-..-' ");
+	    strcpy(image[5],"        ");
+	    break;
         case BIG:
             strcpy(image[0],"      ______      ");
             strcpy(image[1],"    .'      '.    ");
@@ -793,12 +795,12 @@ spaceObj* init_alien_spaceship()
    for(i = 0; i < spaceship_height; i++)
         image[i] = malloc( spaceship_width*sizeof(char));
 
-   strcpy(image[0],"    \\      /    ");
-   strcpy(image[1],"   __\\____/__   ");
-   strcpy(image[2],"  /          \\  ");
-   strcpy(image[3]," /  UFO FTW   \\ ");
-   strcpy(image[4],"/--------------\\");
-   strcpy(image[5],"================");
+   strcpy(image[0],"    \\    /     ");
+   strcpy(image[1],"   __\\__/__    ");
+   strcpy(image[2],"  /         \\  ");
+   strcpy(image[3]," /  UFO FTW  \\ ");
+   strcpy(image[4],"/-------------\\");
+   strcpy(image[5],"===============");
 
    obj->image = image;
 
