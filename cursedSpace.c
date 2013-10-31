@@ -77,13 +77,11 @@ void render()
    switch(game_status)
    {
       case GAME_ON_MAIN_MENU:
-/*
             print_main_menu();
             getchar();
  	    clear();
             print_howto_menu();
             getchar();
-*/
             game_status = GAME_RUNNING;
             break;
       case GAME_RUNNING:
