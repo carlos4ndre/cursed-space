@@ -521,6 +521,8 @@ void print_youdied_menu()
    print_text(x,y+5,"   ) (   | |   | || |   | |  | |   ) |   | |   | (      | |   ) |(_)",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
    print_text(x,y+6,"   | |   | (___) || (___) |  | (__/  )___) (___| (____/\\| (__/  ) _ ",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
    print_text(x,y+7,"   \\_/   (_______)(_______)  (______/ \\_______/(_______/(______/ (_)",BG_WHITE_TXT_BLACK,NONE,ALIGN_CENTER,logo_display_speed);
+
+   getchar();
 }
 
 
@@ -1143,8 +1145,7 @@ void take_damage(spaceObj *obj,int damage)
 
           if(obj->type == HERO_SPACESHIP) {
 	      print_youdied_menu();
-              refresh();
-              exit(1);
+	      game_status = GAME_FINISHED;
           }
 	  return;
     }
