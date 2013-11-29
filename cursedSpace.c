@@ -204,13 +204,9 @@ void check_level_status()
            break;
        case LEVEL_3: 
            init_level(LEVEL_4);
-           break;
        case LEVEL_4: 
-           init_level(FINAL_BOSS);
+	   init_level(LEVEL_4); // you have to buy the expansion packs to get more levels ;)
            break;
-       case FINAL_BOSS:
-           break;
-           // do something
     }
 }
 
@@ -550,7 +546,6 @@ void init_level(int level)
       case LEVEL_2:
       case LEVEL_3:
       case LEVEL_4:
-      case FINAL_BOSS:
          break;
    }
 
@@ -892,8 +887,6 @@ void respawn_enemy()
       case LEVEL_4:
 	    obj_type = ALIEN_SPACESHIP;
             break;
-      case FINAL_BOSS:
-            break;
    }
 
    if(obj_type == SMALL_ASTEROID) obj = init_asteroid(SMALL);
@@ -1166,7 +1159,6 @@ void update_score(int obj_type)
         case SMALL_ASTEROID: score += SCORE_SMALL_ASTEROID; break;
         case MEDIUM_ASTEROID: score += SCORE_MEDIUM_ASTEROID; break;
         case BIG_ASTEROID: score += SCORE_BIG_ASTEROID; break;
-        case FINAL_BOSS: score += SCORE_BOSS; break;
     }
 }
 
