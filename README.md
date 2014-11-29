@@ -22,14 +22,14 @@ And then execute:
 
 ## How it looks like
 
-![alt tag](https://raw2.github.com/carlos4ndre/cursed-space/master/demo/menu.png)
+![alt tag](https://raw.githubusercontent.com/carlos4ndre/cursed-space/master/demo/menu.png)
 
-![alt tag](https://raw2.github.com/carlos4ndre/cursed-space/master/demo/menu2.png)
+![alt tag](https://raw.githubusercontent.com/carlos4ndre/cursed-space/master/demo/menu2.png)
 
-![alt tag](https://raw2.github.com/carlos4ndre/cursed-space/master/demo/photon-torpedo.png)
+![alt tag](https://raw.githubusercontent.com/carlos4ndre/cursed-space/master/demo/photon-torpedo.png)
 
-![alt tag](https://raw2.github.com/carlos4ndre/cursed-space/master/demo/photon-torpedo2.png)
+![alt tag](https://raw.githubusercontent.com/carlos4ndre/cursed-space/master/demo/photon-torpedo2.png)
 
-![alt tag](https://raw2.github.com/carlos4ndre/cursed-space/master/demo/ion-cannon.png)
+![alt tag](https://raw.githubusercontent.com/carlos4ndre/cursed-space/master/demo/ion-cannon.png)
 
-![alt tag](https://raw2.github.com/carlos4ndre/cursed-space/master/demo/ion-cannon2.png)
+![alt tag](https://raw.githubusercontent.com/carlos4ndre/cursed-space/master/demo/ion-cannon2.png)
